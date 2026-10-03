@@ -1214,7 +1214,12 @@ async function saveSession(){
   var r = await sb.from('sessions').insert({
     started_at:log.startedAt, ended_at:log.endedAt, language:log.language, lines:log.lines
   }).select('id').single();
-  if (r.error) { promptText('Could not save. Check your connection and try again.', true); return; }
+  if (r.error) {
+    console.error('Saving conversation failed', r.error);
+    promptText(navigator.onLine === false ? 'Could not save. You are offline. Try again when connected.'
+      : 'Could not save: ' + (r.error.message || 'unknown error') + '. Try again.', true);
+    return;
+  }
   R.pending = null;
   promptText(HAS_SUMMARIZER ? 'Saved. Writing a summary…' : 'Saved.', false);
   var summary = await sumP;
