@@ -73,9 +73,6 @@ svg.icon{width:var(--es-space-5);height:var(--es-space-5);fill:none;stroke:curre
 .notice{padding:var(--es-space-3) var(--es-space-4);border:var(--es-border);border-radius:var(--es-radius-card);background:var(--es-surface);font-size:var(--es-text-md)}
 .notice p + p{margin-top:var(--es-space-2)}
 
-.question{padding:var(--es-space-4) var(--es-space-5);border:var(--es-border);border-radius:var(--es-radius-card);background:var(--es-surface)}
-.q-label{font-size:var(--es-text-sm);color:var(--es-ink-muted);margin-bottom:var(--es-space-1)}
-.q-text{font-family:var(--es-font-caption);font-size:var(--es-question-size);line-height:var(--es-caption-leading);overflow-wrap:anywhere}
 
 .stream-wrap{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
 .stream-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--es-space-2) var(--es-space-3);padding-bottom:var(--es-space-3);border-bottom:var(--es-border)}
@@ -145,33 +142,28 @@ select{width:100%;min-height:var(--es-target-min);padding:0 var(--es-space-3);bo
 
   <div class="notice" id="notice" role="status" hidden></div>
 
-  <section class="question" id="question" aria-label="Current question" hidden>
-    <p class="q-label">Current question</p>
-    <p class="q-text" id="qText"></p>
-  </section>
-
   <section class="stream-wrap" aria-label="Captions">
     <div class="stream-head">
       <span class="label" id="spkLabel">Speaking</span>
       <div class="seg" role="group" aria-labelledby="spkLabel">
-        <button data-speaker="Interviewer 1" aria-pressed="true">Interviewer 1</button>
-        <button data-speaker="Interviewer 2" aria-pressed="false">Interviewer 2</button>
+        <button data-speaker="Speaker 1" aria-pressed="true">Speaker 1</button>
+        <button data-speaker="Speaker 2" aria-pressed="false">Speaker 2</button>
         <button data-speaker="Me" aria-pressed="false">Me</button>
       </div>
     </div>
     <div class="stream" id="stream" tabindex="0">
       <div class="empty" id="empty">
-        <p class="empty-title">Tap Start listening when your interview begins.</p>
-        <button class="pill" id="sample">Try a sample interview</button>
+        <p class="empty-title">Tap Start listening when the conversation begins.</p>
+        <button class="pill" id="sample">Try a sample conversation</button>
         <p class="fine">Nothing is recorded or saved, and the transcript disappears when you close this page. Captions use your browser's speech service, which may process audio online. Captions can be wrong. Words Earshot is unsure of are underlined.</p>
       </div>
     </div>
     <button class="pill solid jump" id="jump" hidden>Jump to live</button>
   </section>
 
-  <div class="clarify" role="group" aria-label="Ask the interviewer">
+  <div class="clarify" role="group" aria-label="Ask the speaker">
     <button class="pill" data-phrase="Could you repeat that?">Repeat that</button>
-    <button class="pill" data-phrase="Could you rephrase the question?">Rephrase</button>
+    <button class="pill" data-phrase="Could you say that another way?">Say it another way</button>
     <button class="pill" data-phrase="I use live captions. One moment, please.">I use captions</button>
     <button class="pill" data-phrase="Could you speak a little closer to the mic?">Closer to the mic</button>
   </div>
@@ -181,10 +173,9 @@ select{width:100%;min-height:var(--es-target-min);padding:0 var(--es-space-3);bo
     <button class="pill" id="clear" hidden>Clear</button>
   </div>
 
-  <div class="sr-only" id="announce" aria-live="polite"></div>
 </div>
 
-<dialog id="show" aria-label="Phrase for the interviewer">
+<dialog id="show" aria-label="Phrase to show">
   <div class="show-inner">
     <p class="show-text" id="showText"></p>
     <div class="show-actions">
@@ -293,23 +284,22 @@ const SOUND = {
   focus:{    hp:300, peakF:2200, peakG:8, lp:4500,  thr:-32, ratio:2,   ns:true }
 };
 const CAP_SIZES = ['var(--es-caption-size)','var(--es-caption-size-larger)','var(--es-caption-size-largest)'];
-const QUESTION = /^(who|what|when|where|why|how|tell me|can you|could you|would you|do you|have you)\b/i;
 const UNSURE = 0.7;
 
-/* Fictional sample, shown only in "Try a sample interview" */
+/* Fictional sample, shown only in "Try a sample conversation" */
 const SAMPLE = [
-  ['Interviewer 1','Thanks for coming in today. Can you see the captions okay?'],
+  ['Speaker 1','Hey, it is so good to see you. Can you read the captions okay?'],
   ['Me','Yes, they are working well.'],
-  ['Interviewer 1','Tell me about a time you led a team through a busy season.'],
-  ['Me','At my last job I ran the night shift through the holiday rush.'],
-  ['Interviewer 2','How did you handle scheduling when people called out?', 0.62],
-  ['Me','I kept a list of people who wanted extra hours and called them first.'],
-  ['Interviewer 1','Great. We will follow up by Friday with next steps.']
+  ['Speaker 1','We finally booked the trip to the coast for next month.'],
+  ['Me','That sounds lovely. Who is going?'],
+  ['Speaker 2','Just the four of us, and we are bringing the dog this time.', 0.62],
+  ['Me','I would love to see the photos when you get back.'],
+  ['Speaker 1','Of course. We should all get dinner before we leave.']
 ];
 
 const $ = id => document.getElementById(id);
 const S = {
-  listening:false, sample:false, timers:[], speaker:'Interviewer 1', lastWho:null, line:null, follow:true,
+  listening:false, sample:false, timers:[], speaker:'Speaker 1', lastWho:null, line:null, follow:true,
   capSize:0, theme:'system', voice:false, lang:'en-US', notices:{}, wake:null,
   amp:{ on:false, vol:VOL_START, focus:false, deviceId:null },
   ctx:null, n:null, stream:null, src:null, ns:false, raf:0, lastDelay:0, limitSince:0
@@ -330,7 +320,6 @@ function setNotice(key, text){
   });
   box.hidden = !box.firstChild;
 }
-function announce(text){ const a = $('announce'); a.textContent = ''; setTimeout(() => { a.textContent = text; }, 50); }
 
 /* ---------- Caption engine (swap for a streaming STT API later) ---------- */
 function createWebSpeechEngine(on){
@@ -434,7 +423,6 @@ function commitFinal(text, conf){
   line.el.classList.remove('interim'); line.el.classList.add('done');
   if (conf > 0 && conf < UNSURE) Array.from(line.p.children).forEach(s => s.classList.add('unsure'));
   S.line = null;
-  if (line.speaker !== 'Me' && (/\?$/.test(text) || QUESTION.test(text))) pinQuestion(text);
   keepUp(); paintClear();
 }
 function finishLine(){
@@ -443,15 +431,9 @@ function finishLine(){
   else S.line.el.remove();
   S.line = null;
 }
-function pinQuestion(text){
-  const q = text.charAt(0).toUpperCase() + text.slice(1);
-  $('qText').textContent = q; $('question').hidden = false;
-  announce('Question: ' + q);
-}
 function clearTranscript(){
   finishLine();
   stream.textContent = ''; stream.appendChild(empty);
-  $('question').hidden = true; $('qText').textContent = '';
   S.lastWho = null; toLive(); paintClear();
 }
 
@@ -481,7 +463,7 @@ function paintListen(){
   $('listen').textContent = busy ? 'Stop' : 'Start listening';
   $('status').hidden = !busy;
   $('dot').hidden = !S.listening;
-  $('statusText').textContent = S.listening ? 'Listening' : 'Sample interview';
+  $('statusText').textContent = S.listening ? 'Listening' : 'Sample';
   stream.classList.toggle('on', busy);
   paintClear();
 }
@@ -517,7 +499,7 @@ function stopListening(){
   paintListen();
 }
 
-/* ---------- Sample interview ---------- */
+/* ---------- Sample conversation ---------- */
 function startSample(){
   clearTranscript(); setNotice('captions', null);
   S.sample = true; paintListen();
