@@ -4,136 +4,224 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Earshot</title>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='114' fill='%230D0D0D'/%3E%3Cg transform='translate(136 136) scale(3.333)' fill='none' stroke='%23FAFAFA' stroke-width='9' stroke-linecap='round'%3E%3Cline x1='8' y1='18' x2='64' y2='18'/%3E%3Cline x1='8' y1='36' x2='48' y2='36'/%3E%3Cline x1='8' y1='54' x2='30' y2='54'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Geist:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* ---------- Design tokens (from the Earshot design kit, tokens.css) ---------- */
 :root{
-  --paper:#F1F4F8; --surface:#FFFFFF; --ink:#0E2240; --ink-soft:#46566F; --line:#CFD7E3;
-  --accent:#8A5A1F; --accent-wash:#F4E9D6; --btn:#0E2240; --btn-ink:#FFFFFF;
-  --cap-bg:#0B1B33; --cap-ink:#F5F7FB; --cap-dim:#8FA2BF; --cap-accent:#E6BC78; --cap-line:#223A60;
-  --warn:#A8321F; --ok:#2F7D5B;
-  --display:"Archivo","Arial Narrow",Arial,sans-serif;
-  --body:"Atkinson Hyperlegible",Verdana,"Segoe UI",sans-serif;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  --es-paper:#FAFAFA; --es-surface:#FFFFFF; --es-ink:#0D0D0D; --es-ink-muted:#555555; --es-line:#E5E5E5;
+  --es-live:#D92D20; /* listening indicator ONLY */
+  --es-font-ui:"Geist","Helvetica Neue",Helvetica,sans-serif;
+  --es-font-caption:"Atkinson Hyperlegible","Helvetica Neue",Helvetica,sans-serif;
+  --es-caption-size:28px; --es-caption-size-larger:34px; --es-caption-size-largest:42px; --es-caption-leading:1.45;
+  --es-question-size:24px; --es-text-lg:20px; --es-text-md:16px; --es-text-sm:14px;
+  --es-wordmark-tracking:-0.04em;
+  --es-space-1:4px; --es-space-2:8px; --es-space-3:12px; --es-space-4:16px;
+  --es-space-5:24px; --es-space-6:32px; --es-space-7:48px; --es-space-8:64px;
+  --es-radius-card:12px; --es-radius-pill:999px; --es-border:1px solid var(--es-line);
+  --es-target-min:44px; --es-button-primary-h:56px; --es-content-max:720px;
+  --es-word-fade:120ms; --es-ease:cubic-bezier(0.2,0,0,1);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --paper:#081425; --surface:#102240; --ink:#EEF2F8; --ink-soft:#A7B6CC; --line:#28426C;
-    --accent:#DDB06A; --accent-wash:#2B2413; --btn:#DDB06A; --btn-ink:#0B1B33;
-    --cap-bg:#050D1B; --warn:#F08A76; --ok:#6CC7A0;
+    --es-paper:#0D0D0D; --es-surface:#171717; --es-ink:#FAFAFA; --es-ink-muted:#A3A3A3; --es-line:#2A2A2A; --es-live:#F04438;
   }
 }
 :root[data-theme="dark"]{
-  --paper:#081425; --surface:#102240; --ink:#EEF2F8; --ink-soft:#A7B6CC; --line:#28426C;
-  --accent:#DDB06A; --accent-wash:#2B2413; --btn:#DDB06A; --btn-ink:#0B1B33;
-  --cap-bg:#050D1B; --warn:#F08A76; --ok:#6CC7A0;
+  --es-paper:#0D0D0D; --es-surface:#171717; --es-ink:#FAFAFA; --es-ink-muted:#A3A3A3; --es-line:#2A2A2A; --es-live:#F04438;
 }
-*,*::before,*::after{box-sizing:inherit}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-reduced-motion: reduce){ :root{ --es-word-fade:0ms; } }
+
+/* ---------- Base ---------- */
+*,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.45}
+body{margin:0;background:var(--es-paper);color:var(--es-ink);font-family:var(--es-font-ui);font-size:var(--es-text-lg);line-height:1.4}
 [hidden]{display:none !important}
 button,select,input{font:inherit;color:inherit}
-h1,h2,p{margin:0}
-:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+:focus-visible{outline:2px solid var(--es-ink);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+svg.icon{width:var(--es-space-5);height:var(--es-space-5);fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 
-.btn{appearance:none;border:2px solid var(--btn);background:var(--btn);color:var(--btn-ink);font-family:var(--display);font-weight:700;font-size:1.15rem;padding:.85rem 1.4rem;border-radius:.5rem;cursor:pointer;min-height:3.25rem}
-.btn.quiet{background:transparent;color:var(--ink);border-color:var(--line)}
-.btn.small{font-size:1rem;padding:.45rem .9rem;min-height:2.75rem}
-.btn[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+/* ---------- Buttons ---------- */
+.pill{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:var(--es-space-2);min-height:var(--es-target-min);padding:0 var(--es-space-5);border:1px solid var(--es-ink);border-radius:var(--es-radius-pill);background:var(--es-paper);color:var(--es-ink);font-size:var(--es-text-md);cursor:pointer}
+.pill.solid,.pill[aria-pressed="true"]{background:var(--es-ink);color:var(--es-paper)}
+.icon-btn{appearance:none;flex:none;display:grid;place-items:center;width:var(--es-target-min);height:var(--es-target-min);padding:0;border:var(--es-border);border-radius:var(--es-radius-pill);background:var(--es-surface);color:var(--es-ink);font-size:var(--es-text-lg);cursor:pointer}
+.listen{appearance:none;flex:1;min-height:var(--es-button-primary-h);border:0;border-radius:var(--es-radius-pill);background:var(--es-ink);color:var(--es-paper);font-weight:500;font-size:var(--es-text-lg);cursor:pointer}
+.seg{display:inline-flex;flex-wrap:wrap;gap:var(--es-space-1);padding:var(--es-space-1);border:var(--es-border);border-radius:var(--es-radius-pill);background:var(--es-surface)}
+.seg button{appearance:none;min-height:var(--es-target-min);padding:0 var(--es-space-4);border:0;border-radius:var(--es-radius-pill);background:transparent;color:var(--es-ink-muted);font-size:var(--es-text-md);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--es-ink);color:var(--es-paper)}
 
-/* Setup */
-.setup{max-width:40rem;margin:0 auto;padding:clamp(1.5rem,5vw,3.5rem) 1.25rem 2.5rem}
-.setup h1{font-family:var(--display);font-weight:800;font-size:clamp(2.8rem,10vw,4.4rem);letter-spacing:-.02em;line-height:1;margin-bottom:.6rem}
-.lede{font-size:1.3rem;color:var(--ink-soft);max-width:30ch;margin-bottom:2rem}
-.steps{list-style:none;counter-reset:s;padding:0;margin:0 0 1.5rem;border-top:2px solid var(--ink)}
-.steps li{counter-increment:s;display:grid;grid-template-columns:2.25rem 1fr;gap:.75rem;padding:1rem 0;border-bottom:1px solid var(--line)}
-.steps li::before{content:counter(s);font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1.1;color:var(--accent)}
-.steps strong{display:block}
-.steps span{color:var(--ink-soft);font-size:1rem}
-.check{display:flex;gap:.75rem;align-items:flex-start;padding:.9rem 1rem;background:var(--accent-wash);border-radius:.5rem;margin-bottom:1.25rem;cursor:pointer}
-.check input{width:1.5rem;height:1.5rem;margin:.1rem 0 0;accent-color:var(--accent);flex:none}
-.field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:1.5rem}
-.field label,.label{font-family:var(--display);font-weight:700;font-size:1rem}
-select,input[type="text"]{background:var(--surface);border:1px solid var(--line);border-radius:.5rem;padding:.65rem .75rem;min-height:2.9rem;width:100%}
-.actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem}
-.msg{color:var(--warn);font-weight:700;margin-bottom:1rem}
-.fine{color:var(--ink-soft);font-size:.95rem;max-width:60ch}
-
-/* Live */
-.live{display:flex;flex-direction:column;min-height:100%}
-.bar{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;padding:.7rem 1rem;background:var(--surface);border-bottom:1px solid var(--line)}
-.status{display:flex;align-items:center;gap:.5rem;font-family:var(--display);font-weight:700}
-.dot{width:.75rem;height:.75rem;border-radius:50%;background:var(--ok)}
-.status.off .dot{background:var(--warn)}
-.meter{flex:1 1 7rem;min-width:5rem;max-width:16rem;height:.65rem;background:var(--line);border-radius:1rem;overflow:hidden}
-.meter i{display:block;height:100%;width:0;background:var(--accent)}
-.delay{color:var(--ink-soft);font-size:.95rem}
-.grow{flex:1 1 0}
-.notice{padding:.65rem 1rem;background:var(--accent-wash);border-bottom:1px solid var(--line);font-size:1rem}
-.notice p + p{margin-top:.3rem}
-
-.stage{flex:1;display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;padding:1rem;min-height:0}
-.captions{background:var(--cap-bg);color:var(--cap-ink);border-radius:.75rem;display:flex;flex-direction:column;height:46vh;min-height:16rem;overflow:hidden}
-.cap-head{display:flex;align-items:center;gap:.5rem;padding:.5rem .6rem .5rem 1rem;border-bottom:1px solid var(--cap-line);color:var(--cap-dim);font-size:.95rem}
-.cap-head .btn{border-color:var(--cap-line);color:var(--cap-ink);background:transparent}
-.cap-head .btn[aria-pressed="true"]{background:var(--cap-accent);border-color:var(--cap-accent);color:#0B1B33}
-.cap-head :focus-visible{outline-color:var(--cap-accent)}
-.lines{flex:1;overflow-y:auto;padding:1rem 1.25rem 1.5rem;font-size:var(--cap-size,2rem);line-height:1.25;display:flex;flex-direction:column;gap:.55em}
-.lines p{color:var(--cap-ink);overflow-wrap:anywhere}
-.lines p.old{color:var(--cap-dim)}
-.lines p.interim{opacity:.72}
-.lines p.reply{color:var(--cap-accent);border-left:.18em solid var(--cap-accent);padding-left:.5em}
-.lines p.reply::before{content:"Reply";display:block;font-family:var(--display);font-weight:700;font-size:.42em;line-height:1.6}
-.lines p.empty{font-size:1.2rem;color:var(--cap-dim)}
-
-.controls{background:var(--surface);border:1px solid var(--line);border-radius:.75rem;align-self:start}
-.group{padding:1rem}
-.group + .group{border-top:1px solid var(--line)}
-.group h2{font-family:var(--display);font-weight:700;font-size:1.05rem}
-.row{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:.6rem}
-.row output{color:var(--ink-soft)}
-.vol{display:flex;align-items:center;gap:.6rem}
-.vol input{flex:1;accent-color:var(--accent);height:2.5rem;min-width:0}
-.stepbtn{appearance:none;width:3.25rem;height:3.25rem;flex:none;border-radius:50%;border:2px solid var(--ink);background:transparent;font-family:var(--display);font-weight:700;font-size:1.7rem;line-height:1;cursor:pointer}
-.hint{color:var(--ink-soft);font-size:.95rem;margin-top:.5rem}
-.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
-.seg .btn{padding:.5rem .3rem;font-size:.98rem;min-height:3rem}
-.hold{width:100%;margin-top:.75rem;touch-action:none;user-select:none;-webkit-user-select:none}
-.hold.down{background:var(--accent-wash);border-color:var(--accent)}
-.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
-.replyrow{display:flex;gap:.5rem}
-.replyrow input{flex:1;min-width:0}
-
-@media (min-width:900px){
-  .live{height:100%}
-  .stage{grid-template-columns:minmax(0,1fr) 22rem;overflow:hidden}
-  .captions{height:auto;min-height:0}
-  .controls{align-self:stretch;overflow-y:auto}
+/* ---------- Live screen ---------- */
+.app{max-width:var(--es-content-max);height:100%;height:100dvh;margin:0 auto;display:flex;flex-direction:column;gap:var(--es-space-4);
+  padding:calc(var(--es-space-4) + env(safe-area-inset-top,0px)) var(--es-space-4) calc(var(--es-space-4) + env(safe-area-inset-bottom,0px))}
+.top{display:flex;align-items:center;gap:var(--es-space-4);min-height:var(--es-target-min)}
+.lockup{display:flex;align-items:center;gap:.3em;font-size:var(--es-question-size)}
+.lockup svg{width:1.1em;height:1.1em}
+.wordmark{font-weight:500;letter-spacing:var(--es-wordmark-tracking);line-height:1}
+.grow{flex:1}
+.status{display:flex;align-items:center;gap:var(--es-space-2);font-size:var(--es-text-sm);white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--es-live)}
+@media (prefers-reduced-motion: no-preference){
+  .dot{animation:pulse 2s ease-in-out infinite}
+  .stream.on .line:last-child .text::after{animation:blink 1s steps(1) infinite}
 }
-@media (prefers-reduced-motion:no-preference){
-  .meter i{transition:width 60ms linear}
-  .lines{scroll-behavior:smooth}
+@keyframes pulse{50%{opacity:.35}}
+@keyframes blink{50%{opacity:0}}
+
+.notice{padding:var(--es-space-3) var(--es-space-4);border:var(--es-border);border-radius:var(--es-radius-card);background:var(--es-surface);font-size:var(--es-text-md)}
+.notice p + p{margin-top:var(--es-space-2)}
+
+.question{padding:var(--es-space-4) var(--es-space-5);border:var(--es-border);border-radius:var(--es-radius-card);background:var(--es-surface)}
+.q-label{font-size:var(--es-text-sm);color:var(--es-ink-muted);margin-bottom:var(--es-space-1)}
+.q-text{font-family:var(--es-font-caption);font-size:var(--es-question-size);line-height:var(--es-caption-leading);overflow-wrap:anywhere}
+
+.stream-wrap{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
+.stream-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--es-space-2) var(--es-space-3);padding-bottom:var(--es-space-3);border-bottom:var(--es-border)}
+.label{font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+@media (max-width:520px){
+  .stream-head .label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .lockup{font-size:var(--es-text-lg)}
 }
+.stream{flex:1;overflow-y:auto;padding:var(--es-space-4) 0 var(--es-space-7);font-family:var(--es-font-caption);font-size:var(--cap-size,var(--es-caption-size));line-height:var(--es-caption-leading)}
+.line + .line{margin-top:var(--es-space-4)}
+.who{font-weight:700;font-size:var(--es-text-sm);color:var(--es-ink-muted);margin-bottom:var(--es-space-1)}
+.text{max-width:60ch;color:var(--es-ink);overflow-wrap:anywhere}
+.line.interim .text{color:var(--es-ink-muted)}
+.w{animation:wordIn var(--es-word-fade) var(--es-ease) both}
+@keyframes wordIn{from{opacity:0}}
+.w.unsure{text-decoration:underline dotted;text-decoration-thickness:2px;text-underline-offset:.2em}
+.stream.on .line:last-child .text::after{content:"";display:inline-block;width:.45em;height:1em;margin-left:.15em;vertical-align:-.15em;background:var(--es-ink)}
+.empty{display:flex;flex-direction:column;align-items:flex-start;gap:var(--es-space-5);padding-top:var(--es-space-5);font-family:var(--es-font-ui)}
+.empty-title{font-size:var(--es-question-size);line-height:1.3;max-width:24ch}
+.fine{font-size:var(--es-text-sm);line-height:1.5;color:var(--es-ink-muted);max-width:52ch}
+.jump{position:absolute;left:50%;bottom:var(--es-space-4);transform:translateX(-50%)}
+
+.clarify{display:flex;flex-wrap:wrap;gap:var(--es-space-2)}
+.dock{display:flex;gap:var(--es-space-3)}
+
+/* ---------- Full-screen phrase ---------- */
+#show{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:var(--es-space-6) var(--es-space-5);border:0;background:var(--es-paper);color:var(--es-ink)}
+#show[open]{display:flex}
+.show-inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--es-space-7);text-align:center}
+#show.flipped .show-inner{transform:rotate(180deg)}
+.show-text{font-family:var(--es-font-caption);font-size:clamp(var(--es-space-7),9vw,calc(var(--es-space-8) * 1.5));line-height:1.2;max-width:18ch;overflow-wrap:anywhere}
+.show-actions{display:flex;gap:var(--es-space-3)}
+
+/* ---------- Settings ---------- */
+#settings{width:calc(100vw - var(--es-space-6));max-width:var(--es-content-max);max-height:calc(100dvh - var(--es-space-6));padding:0;border:var(--es-border);border-radius:var(--es-radius-card);background:var(--es-paper);color:var(--es-ink)}
+#settings::backdrop{background:color-mix(in srgb,var(--es-paper) 85%,transparent)}
+.s-head{display:flex;align-items:center;justify-content:space-between;padding:var(--es-space-4) var(--es-space-4) var(--es-space-4) var(--es-space-5)}
+.s-head h2{font-weight:500;font-size:var(--es-text-lg)}
+.group{padding:var(--es-space-4) var(--es-space-5) var(--es-space-5);border-top:var(--es-border)}
+.group h3{font-weight:500;font-size:var(--es-text-md);margin-bottom:var(--es-space-3)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:var(--es-space-4)}
+.row + .row,.row + .sub,.sub + .row{margin-top:var(--es-space-4)}
+.hint{font-size:var(--es-text-sm);color:var(--es-ink-muted);margin-top:var(--es-space-2)}
+select{width:100%;min-height:var(--es-target-min);padding:0 var(--es-space-3);border:var(--es-border);border-radius:var(--es-radius-card);background:var(--es-surface);font-size:var(--es-text-md)}
+.check{padding:var(--es-space-4);border:1px solid var(--es-ink);border-radius:var(--es-radius-card);margin-top:var(--es-space-3)}
+.check p{font-size:var(--es-text-md);margin-bottom:var(--es-space-3)}
+.check .actions{display:flex;flex-wrap:wrap;gap:var(--es-space-2)}
+.vol{display:flex;align-items:center;gap:var(--es-space-3)}
+.vol input{flex:1;min-width:0;height:var(--es-target-min);accent-color:var(--es-ink)}
+.vol output{font-size:var(--es-text-md);color:var(--es-ink-muted);min-width:5ch;text-align:right}
 </style>
 </head>
 <body>
 
-<main class="setup" id="setup">
-  <h1>Earshot</h1>
-  <p class="lede">A clearer voice in the headphones, and the words on screen as they are spoken.</p>
+<div class="app">
+  <header class="top">
+    <div class="lockup">
+      <svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="18" x2="64" y2="18"/><line x1="8" y1="36" x2="48" y2="36"/><line x1="8" y1="54" x2="30" y2="54"/></svg>
+      <h1 class="wordmark">earshot</h1>
+    </div>
+    <span class="grow"></span>
+    <div class="status" id="status" hidden><span class="dot" id="dot"></span><span id="statusText">Listening</span></div>
+    <button class="icon-btn" id="openSettings" aria-label="Settings">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+    </button>
+  </header>
 
-  <ol class="steps">
-    <li><div><strong>Plug wired headphones into this device.</strong><span>Bluetooth adds a delay that sounds like an echo.</span></div></li>
-    <li><div><strong>Put this device within arm's reach of the person speaking.</strong><span>A close microphone does more for clarity than any volume setting.</span></div></li>
-    <li><div><strong>Hand the headphones to the listener, then start.</strong><span>The volume starts low. The listener turns it up.</span></div></li>
-  </ol>
+  <div class="notice" id="notice" role="status" hidden></div>
 
-  <label class="check"><input type="checkbox" id="phones"><span>Headphones are plugged in. Without them the speaker will squeal.</span></label>
+  <section class="question" id="question" aria-label="Current question" hidden>
+    <p class="q-label">Current question</p>
+    <p class="q-text" id="qText"></p>
+  </section>
 
-  <div class="field">
-    <label for="lang">Language being spoken, for captions</label>
+  <section class="stream-wrap" aria-label="Captions">
+    <div class="stream-head">
+      <span class="label" id="spkLabel">Speaking</span>
+      <div class="seg" role="group" aria-labelledby="spkLabel">
+        <button data-speaker="Interviewer 1" aria-pressed="true">Interviewer 1</button>
+        <button data-speaker="Interviewer 2" aria-pressed="false">Interviewer 2</button>
+        <button data-speaker="Me" aria-pressed="false">Me</button>
+      </div>
+    </div>
+    <div class="stream" id="stream" tabindex="0">
+      <div class="empty" id="empty">
+        <p class="empty-title">Tap Start listening when your interview begins.</p>
+        <button class="pill" id="sample">Try a sample interview</button>
+        <p class="fine">Nothing is recorded or saved, and the transcript disappears when you close this page. Captions use your browser's speech service, which may process audio online. Captions can be wrong. Words Earshot is unsure of are underlined.</p>
+      </div>
+    </div>
+    <button class="pill solid jump" id="jump" hidden>Jump to live</button>
+  </section>
+
+  <div class="clarify" role="group" aria-label="Ask the interviewer">
+    <button class="pill" data-phrase="Could you repeat that?">Repeat that</button>
+    <button class="pill" data-phrase="Could you rephrase the question?">Rephrase</button>
+    <button class="pill" data-phrase="I use live captions. One moment, please.">I use captions</button>
+    <button class="pill" data-phrase="Could you speak a little closer to the mic?">Closer to the mic</button>
+  </div>
+
+  <div class="dock">
+    <button class="listen" id="listen">Start listening</button>
+    <button class="pill" id="clear" hidden>Clear</button>
+  </div>
+
+  <div class="sr-only" id="announce" aria-live="polite"></div>
+</div>
+
+<dialog id="show" aria-label="Phrase for the interviewer">
+  <div class="show-inner">
+    <p class="show-text" id="showText"></p>
+    <div class="show-actions">
+      <button class="pill" id="flip">Flip</button>
+      <button class="pill solid" id="showDone">Done</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="settings" aria-labelledby="settingsH">
+  <div class="s-head">
+    <h2 id="settingsH">Settings</h2>
+    <button class="icon-btn" id="closeSettings" aria-label="Close settings">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+
+  <div class="group">
+    <h3 id="sizeH">Caption size</h3>
+    <div class="seg" role="group" aria-labelledby="sizeH">
+      <button data-size="0" aria-pressed="true">Large</button>
+      <button data-size="1" aria-pressed="false">Larger</button>
+      <button data-size="2" aria-pressed="false">Largest</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <h3 id="themeH">Appearance</h3>
+    <div class="seg" role="group" aria-labelledby="themeH">
+      <button data-theme-choice="system" aria-pressed="true">System</button>
+      <button data-theme-choice="light" aria-pressed="false">Light</button>
+      <button data-theme-choice="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <h3><label for="lang">Language being spoken</label></h3>
     <select id="lang">
       <option value="en-US">English</option>
       <option value="es-US">Español</option>
@@ -142,491 +230,533 @@ select,input[type="text"]{background:var(--surface);border:1px solid var(--line)
       <option value="vi-VN">Tiếng Việt</option>
       <option value="fil-PH">Tagalog</option>
     </select>
+    <p class="hint">Captions show the words as spoken. They do not translate.</p>
   </div>
 
-  <p class="msg" id="setupMsg" role="alert" hidden></p>
-  <div class="actions">
-    <button class="btn" id="start">Start listening</button>
-    <button class="btn quiet" id="sample">See a sample conversation</button>
+  <div class="group">
+    <div class="row">
+      <h3 id="voiceH" style="margin:0">Read phrases aloud</h3>
+      <button class="pill" id="voice" aria-pressed="false" aria-labelledby="voiceH voice">Off</button>
+    </div>
+    <p class="hint">When on, tapping a phrase also speaks it.</p>
   </div>
-  <p class="fine">This page does not record or save anything. Captions use your browser's speech service, which may process audio online. Captions show the words as spoken and do not translate.</p>
-</main>
 
-<main class="live" id="live" hidden>
-  <div class="bar">
-    <div class="status" id="status"><span class="dot"></span><span id="statusText">Listening</span></div>
-    <div class="meter" role="img" aria-label="Microphone level"><i id="meterFill"></i></div>
-    <span class="delay" id="delay"></span>
-    <span class="grow"></span>
-    <button class="btn quiet small" id="pause" aria-pressed="false">Pause sound</button>
-    <button class="btn small" id="end">End conversation</button>
-  </div>
-  <div class="notice" id="notice" role="status" hidden></div>
+  <div class="group">
+    <div class="row">
+      <h3 id="ampH" style="margin:0">Sound in headphones</h3>
+      <button class="pill" id="ampToggle" aria-pressed="false" aria-labelledby="ampH ampToggle">Off</button>
+    </div>
+    <p class="hint">Makes voices clearer and louder while you listen.</p>
 
-  <div class="stage">
-    <section class="captions" aria-label="Captions">
-      <div class="cap-head">
-        <span>Captions</span>
-        <span class="grow"></span>
-        <button class="btn small" id="capToggle" aria-pressed="true">On</button>
-        <button class="btn small" id="smaller" aria-label="Smaller text">A−</button>
-        <button class="btn small" id="bigger" aria-label="Larger text">A+</button>
+    <div class="check" id="ampCheck" hidden>
+      <p>Put on headphones to avoid feedback.</p>
+      <div class="actions">
+        <button class="pill solid" id="ampConfirm">Headphones are on</button>
+        <button class="pill" id="ampCancel">Cancel</button>
       </div>
-      <div class="lines" id="lines" aria-live="polite"></div>
-    </section>
+    </div>
 
-    <section class="controls" aria-label="Sound and reply">
-      <div class="group">
-        <div class="row"><h2 id="volH">Volume</h2><output id="volOut"></output></div>
+    <div id="ampControls" hidden>
+      <div class="sub" style="margin-top:var(--es-space-4)">
         <div class="vol">
-          <button class="stepbtn" id="volDown" aria-label="Quieter">−</button>
-          <input type="range" id="vol" min="0" max="10" step="1" aria-labelledby="volH">
-          <button class="stepbtn" id="volUp" aria-label="Louder">+</button>
+          <button class="icon-btn" id="volDown" aria-label="Quieter">−</button>
+          <input type="range" id="vol" min="0" max="10" step="1" aria-label="Volume">
+          <button class="icon-btn" id="volUp" aria-label="Louder">+</button>
+          <output id="volOut" for="vol"></output>
         </div>
-        <p class="hint">Start low and turn up slowly.</p>
+        <p class="hint">Volume starts low. Turn it up slowly.</p>
       </div>
-
-      <div class="group">
-        <div class="row"><h2>Sound</h2></div>
-        <div class="seg" role="group" aria-label="Sound setting">
-          <button class="btn quiet" data-preset="everyday" aria-pressed="true">Everyday</button>
-          <button class="btn quiet" data-preset="sharper" aria-pressed="false">Sharper</button>
-          <button class="btn quiet" data-preset="noisy" aria-pressed="false">Noisy room</button>
-        </div>
-        <p class="hint" id="presetNote"></p>
-        <button class="btn quiet small hold" id="compare">Hold to hear it without help</button>
+      <div class="row">
+        <span id="focusH">Focus on voices</span>
+        <button class="pill" id="focus" aria-pressed="false" aria-labelledby="focusH focus">Off</button>
       </div>
-
-      <div class="group">
-        <div class="row"><h2>Reply without speaking</h2></div>
-        <div class="chips">
-          <button class="btn quiet small" data-reply="Yes">Yes</button>
-          <button class="btn quiet small" data-reply="No">No</button>
-          <button class="btn quiet small" data-reply="Please say that again">Say that again</button>
-          <button class="btn quiet small" data-reply="A little slower, please">Slower</button>
-        </div>
-        <div class="replyrow">
-          <input type="text" id="replyText" placeholder="Type a reply" aria-label="Type a reply" autocomplete="off">
-          <button class="btn small" id="replyShow">Show</button>
-        </div>
+      <p class="hint" id="delay"></p>
+      <div class="sub" id="micGroup" hidden style="margin-top:var(--es-space-4)">
+        <label class="label" for="mic">Microphone</label>
+        <select id="mic" style="margin-top:var(--es-space-1)"></select>
       </div>
-
-      <div class="group" id="micGroup">
-        <div class="field" style="margin:0">
-          <label for="mic">Microphone</label>
-          <select id="mic"></select>
-        </div>
-      </div>
-    </section>
+    </div>
   </div>
-</main>
+</dialog>
 
 <script>
 (function(){
 'use strict';
 
 /* ---------- Tunable audio constants ---------- */
-var VOL_MIN_DB = -12;      // slider at 0
-var VOL_STEP_DB = 3;       // each slider step
-var VOL_START = 3;         // every conversation starts here
-var CEILING = 0.5;         // soft limit, about -6 dBFS, applied last
-var PRESETS = {
-  everyday:{ hp:150, peakF:2500, peakG:6,  peakQ:0.8, shelfG:0, thr:-40, ratio:2.5, ns:false,
-    note:'Even lift across speech. A good place to start.' },
-  sharper:{  hp:200, peakF:2800, peakG:11, peakQ:0.7, shelfG:4, thr:-45, ratio:3,   ns:false,
-    note:'More lift on sounds like s, t and f, where words blur first.' },
-  noisy:{    hp:320, peakF:2200, peakG:8,  peakQ:0.9, shelfG:0, thr:-32, ratio:2,   ns:true,
-    note:'Cuts low rumble and steady background noise. Voices may sound thinner.' }
+const VOL_MIN_DB = -12;      // slider at 0
+const VOL_STEP_DB = 3;       // each slider step
+const VOL_START = 3;         // sound always starts here when switched on
+const CEILING = 0.5;         // hard loudness cap, about -6 dBFS, applied last. Never remove.
+const SOUND = {
+  everyday:{ hp:120, peakF:2500, peakG:6, lp:12000, thr:-40, ratio:2.5, ns:false },
+  focus:{    hp:300, peakF:2200, peakG:8, lp:4500,  thr:-32, ratio:2,   ns:true }
 };
-var CAP_SIZES = ['1.5rem','2rem','2.6rem','3.3rem'];
+const CAP_SIZES = ['var(--es-caption-size)','var(--es-caption-size-larger)','var(--es-caption-size-largest)'];
+const QUESTION = /^(who|what|when|where|why|how|tell me|can you|could you|would you|do you|have you)\b/i;
+const UNSURE = 0.7;
 
-/* Fictional sample, shown only in "See a sample conversation" */
-var SAMPLE = [
-  ['heard','Hi, thanks for coming in today. Can you hear me through the headphones?'],
-  ['reply','Yes, much better.'],
-  ['heard','Good. I am going to ask a few questions about the kind of work you are looking for.'],
-  ['heard','Are you free on weekday mornings?'],
-  ['reply','Any day but Friday.'],
-  ['heard','Great. We have two openings that fit. I will walk you through both.']
+/* Fictional sample, shown only in "Try a sample interview" */
+const SAMPLE = [
+  ['Interviewer 1','Thanks for coming in today. Can you see the captions okay?'],
+  ['Me','Yes, they are working well.'],
+  ['Interviewer 1','Tell me about a time you led a team through a busy season.'],
+  ['Me','At my last job I ran the night shift through the holiday rush.'],
+  ['Interviewer 2','How did you handle scheduling when people called out?', 0.62],
+  ['Me','I kept a list of people who wanted extra hours and called them first.'],
+  ['Interviewer 1','Great. We will follow up by Friday with next steps.']
 ];
 
-var $ = function(id){ return document.getElementById(id); };
-var S = { ctx:null, n:null, stream:null, src:null, running:false, sample:false, paused:false,
-          vol:VOL_START, preset:'everyday', ns:false, deviceId:null,
-          captions:true, rec:null, recEnds:[], lang:'en-US', capSize:1,
-          lastLoud:0, lastDelay:0, limitSince:0, notices:{}, timers:[], wake:null, raf:0 };
-var buf = new Float32Array(1024);
+const $ = id => document.getElementById(id);
+const S = {
+  listening:false, sample:false, timers:[], speaker:'Interviewer 1', lastWho:null, line:null, follow:true,
+  capSize:0, theme:'system', voice:false, lang:'en-US', notices:{}, wake:null,
+  amp:{ on:false, vol:VOL_START, focus:false, deviceId:null },
+  ctx:null, n:null, stream:null, src:null, ns:false, raf:0, lastDelay:0, limitSince:0
+};
+const stream = $('stream'), empty = $('empty');
+
+/* ---------- Preferences (look only; never the transcript) ---------- */
+function load(key){ try { return localStorage.getItem('earshot.' + key); } catch (e) { return null; } }
+function save(key, v){ try { localStorage.setItem('earshot.' + key, v); } catch (e) {} }
 
 /* ---------- Notices ---------- */
-var NOTICE_ORDER = ['mic','micmute','captions','limit','quiet','delay','sample'];
+const NOTICE_ORDER = ['captions','mic','micmute','limit','delay'];
 function setNotice(key, text){
   if (text) S.notices[key] = text; else delete S.notices[key];
-  var box = $('notice'); box.textContent = '';
-  NOTICE_ORDER.forEach(function(k){
-    if (S.notices[k]) { var p = document.createElement('p'); p.textContent = S.notices[k]; box.appendChild(p); }
+  const box = $('notice'); box.textContent = '';
+  NOTICE_ORDER.forEach(k => {
+    if (S.notices[k]) { const p = document.createElement('p'); p.textContent = S.notices[k]; box.appendChild(p); }
   });
   box.hidden = !box.firstChild;
 }
+function announce(text){ const a = $('announce'); a.textContent = ''; setTimeout(() => { a.textContent = text; }, 50); }
 
-/* ---------- Audio chain ---------- */
+/* ---------- Caption engine (swap for a streaming STT API later) ---------- */
+function createWebSpeechEngine(on){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  let rec = null, active = false, ends = [];
+  function boot(lang){
+    const r = rec = new SR();
+    r.continuous = true; r.interimResults = true; r.lang = lang;
+    r.onresult = e => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const res = e.results[i];
+        if (res.isFinal) on.final(res[0].transcript.trim(), res[0].confidence);
+        else interim += res[0].transcript;
+      }
+      on.interim(interim.trim());
+      ends.length = 0;
+    };
+    r.onerror = e => on.error(e.error);
+    r.onend = () => {
+      if (!active || rec !== r) return;
+      const now = Date.now();
+      ends = ends.filter(t => now - t < 8000); ends.push(now);
+      if (ends.length > 6) { active = false; on.error('unstable'); return; }
+      setTimeout(() => { if (active && rec === r) { try { r.start(); } catch (x) {} } }, 300);
+    };
+    r.start();
+  }
+  return {
+    start(lang){ active = true; ends = []; boot(lang); },
+    stop(){
+      active = false;
+      if (rec) { rec.onend = rec.onresult = rec.onerror = null; try { rec.abort(); } catch (x) {} rec = null; }
+    }
+  };
+}
+const engine = createWebSpeechEngine({
+  interim: text => showInterim(text),
+  final: (text, conf) => commitFinal(text, conf),
+  error: code => {
+    if (code === 'not-allowed' || code === 'service-not-allowed') {
+      setNotice('captions', 'Earshot needs your microphone to caption. Allow access in your browser settings.'); stopListening();
+    } else if (code === 'network') {
+      setNotice('captions', 'Captions need an internet connection.');
+    } else if (code === 'language-not-supported') {
+      setNotice('captions', 'This browser cannot caption that language. Choose another in Settings.'); stopListening();
+    } else if (code === 'unstable') {
+      setNotice('captions', 'Captions keep stopping on this device. Tap Start listening to try again.'); stopListening();
+    }
+  }
+});
+
+/* ---------- Caption stream ---------- */
+function atBottom(){ return stream.scrollHeight - stream.scrollTop - stream.clientHeight < 48; }
+function toLive(){ stream.scrollTop = stream.scrollHeight; S.follow = true; $('jump').hidden = true; }
+function keepUp(){ if (S.follow) toLive(); else $('jump').hidden = false; }
+stream.addEventListener('scroll', () => { S.follow = atBottom(); if (S.follow) $('jump').hidden = true; });
+
+function ensureLine(){
+  if (S.line) return S.line;
+  if (empty.parentNode) empty.remove();
+  const el = document.createElement('div'); el.className = 'line';
+  if (S.speaker !== S.lastWho) {
+    const who = document.createElement('div'); who.className = 'who'; who.textContent = S.speaker; el.appendChild(who);
+    S.lastWho = S.speaker;
+  }
+  const p = document.createElement('p'); p.className = 'text'; el.appendChild(p);
+  stream.appendChild(el);
+  while (stream.children.length > 200) stream.removeChild(stream.firstChild);
+  S.line = { el, p, speaker:S.speaker };
+  return S.line;
+}
+/* Keep words already on screen, add only new ones so each fades in once. */
+function renderWords(p, text){
+  const words = text.split(/\s+/).filter(Boolean);
+  const spans = p.children;
+  let i = 0;
+  while (i < spans.length && i < words.length && spans[i].dataset.w === words[i]) i++;
+  for (let k = spans.length - 1; k >= i; k--) spans[k].remove();
+  for (let k = i; k < words.length; k++) {
+    const s = document.createElement('span'); s.className = 'w'; s.dataset.w = words[k];
+    s.textContent = (k ? ' ' : '') + words[k];
+    p.appendChild(s);
+  }
+}
+function showInterim(text){
+  if (!text) {
+    if (S.line && !S.line.el.classList.contains('done')) { S.line.el.remove(); S.line = null; }
+    return;
+  }
+  const line = ensureLine();
+  line.el.classList.add('interim');
+  renderWords(line.p, text);
+  keepUp();
+}
+function commitFinal(text, conf){
+  if (!text) return;
+  const line = ensureLine();
+  renderWords(line.p, text);
+  line.el.classList.remove('interim'); line.el.classList.add('done');
+  if (conf > 0 && conf < UNSURE) Array.from(line.p.children).forEach(s => s.classList.add('unsure'));
+  S.line = null;
+  if (line.speaker !== 'Me' && (/\?$/.test(text) || QUESTION.test(text))) pinQuestion(text);
+  keepUp(); paintClear();
+}
+function finishLine(){
+  if (!S.line) return;
+  if (S.line.p.children.length) { S.line.el.classList.remove('interim'); S.line.el.classList.add('done'); }
+  else S.line.el.remove();
+  S.line = null;
+}
+function pinQuestion(text){
+  const q = text.charAt(0).toUpperCase() + text.slice(1);
+  $('qText').textContent = q; $('question').hidden = false;
+  announce('Question: ' + q);
+}
+function clearTranscript(){
+  finishLine();
+  stream.textContent = ''; stream.appendChild(empty);
+  $('question').hidden = true; $('qText').textContent = '';
+  S.lastWho = null; toLive(); paintClear();
+}
+
+/* ---------- Speaker, size, theme ---------- */
+function paintSpeaker(){
+  document.querySelectorAll('[data-speaker]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.speaker === S.speaker)));
+}
+function setSpeaker(name){
+  if (name === S.speaker) return;
+  finishLine(); S.speaker = name; paintSpeaker();
+}
+function paintSize(){
+  stream.style.setProperty('--cap-size', CAP_SIZES[S.capSize]);
+  document.querySelectorAll('[data-size]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.size) === S.capSize)));
+  if (S.follow) toLive();
+}
+function paintTheme(){
+  if (S.theme === 'system') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', S.theme);
+  document.querySelectorAll('[data-theme-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeChoice === S.theme)));
+}
+function paintToggle(el, on){ el.setAttribute('aria-pressed', String(on)); el.textContent = on ? 'On' : 'Off'; }
+
+/* ---------- Listening state ---------- */
+function paintListen(){
+  const busy = S.listening || S.sample;
+  $('listen').textContent = busy ? 'Stop' : 'Start listening';
+  $('status').hidden = !busy;
+  $('dot').hidden = !S.listening;
+  $('statusText').textContent = S.listening ? 'Listening' : 'Sample interview';
+  stream.classList.toggle('on', busy);
+  paintClear();
+}
+function paintClear(){
+  $('clear').hidden = S.listening || S.sample || !stream.querySelector('.line');
+}
+async function keepAwake(){
+  try { if (navigator.wakeLock) S.wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+function startListening(){
+  if (S.sample) stopSample();
+  setNotice('captions', null);
+  if (!engine && !S.amp.on) {
+    setNotice('captions', 'Captions are not available in this browser. Open Earshot in Chrome.');
+    return;
+  }
+  S.listening = true; paintListen(); toLive();
+  if (engine) {
+    try { engine.start(S.lang); }
+    catch (e) { setNotice('captions', 'Captions could not start. Tap Start listening to try again.'); }
+  } else {
+    setNotice('captions', 'Captions are not available in this browser. Sound still works. Open Earshot in Chrome for captions.');
+  }
+  if (S.amp.on) startAmp();
+  keepAwake();
+}
+function stopListening(){
+  if (!S.listening) return;
+  S.listening = false;
+  if (engine) engine.stop();
+  finishLine(); stopAmp();
+  if (S.wake) { try { S.wake.release(); } catch (e) {} S.wake = null; }
+  paintListen();
+}
+
+/* ---------- Sample interview ---------- */
+function startSample(){
+  clearTranscript(); setNotice('captions', null);
+  S.sample = true; paintListen();
+  let t = 600;
+  SAMPLE.forEach(([who, text, conf]) => {
+    const words = text.split(' ');
+    S.timers.push(setTimeout(() => setSpeaker(who), t));
+    words.forEach((_, i) => {
+      t += 160;
+      S.timers.push(setTimeout(() => showInterim(words.slice(0, i + 1).join(' ')), t));
+    });
+    t += 450;
+    S.timers.push(setTimeout(() => commitFinal(text, conf || 0.92), t));
+    t += who === 'Me' ? 900 : 1400;
+  });
+  S.timers.push(setTimeout(stopSample, t));
+}
+function stopSample(){
+  S.timers.forEach(clearTimeout); S.timers = [];
+  finishLine(); S.sample = false; paintListen();
+}
+
+/* ---------- Clarify phrases ---------- */
+function showPhrase(text){
+  $('showText').textContent = text;
+  $('show').classList.remove('flipped');
+  $('show').showModal(); $('showDone').focus();
+  if (S.voice && window.speechSynthesis) {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US';
+    speechSynthesis.speak(u);
+  }
+}
+
+/* ---------- Sound in headphones (Web Audio) ---------- */
 function softCurve(){
-  var N = 2049, a = new Float32Array(N);
-  for (var i = 0; i < N; i++) { var x = i / (N - 1) * 2 - 1; a[i] = CEILING * Math.tanh(x / CEILING); }
+  const N = 2049, a = new Float32Array(N);
+  for (let i = 0; i < N; i++) { const x = i / (N - 1) * 2 - 1; a[i] = CEILING * Math.tanh(x / CEILING); }
   return a;
 }
 function buildChain(){
-  var c = S.ctx, n = S.n = {};
+  const c = S.ctx, n = S.n = {};
   n.hp = c.createBiquadFilter(); n.hp.type = 'highpass'; n.hp.Q.value = 0.7;
-  n.peak = c.createBiquadFilter(); n.peak.type = 'peaking';
-  n.shelf = c.createBiquadFilter(); n.shelf.type = 'highshelf'; n.shelf.frequency.value = 4000;
+  n.peak = c.createBiquadFilter(); n.peak.type = 'peaking'; n.peak.Q.value = 0.8;
+  n.lp = c.createBiquadFilter(); n.lp.type = 'lowpass'; n.lp.Q.value = 0.7;
   n.comp = c.createDynamicsCompressor(); n.comp.knee.value = 12; n.comp.attack.value = 0.005; n.comp.release.value = 0.12;
   n.vol = c.createGain();
-  n.wet = c.createGain();
-  n.dry = c.createGain(); n.dry.gain.value = 0;
   n.clip = c.createWaveShaper(); n.clip.curve = softCurve(); n.clip.oversample = '2x';
-  n.master = c.createGain();
-  n.inAn = c.createAnalyser(); n.inAn.fftSize = 1024;
   n.outAn = c.createAnalyser(); n.outAn.fftSize = 1024;
-  // mic -> highpass -> speech lift -> shelf -> compressor -> volume -> limiter -> out
-  n.hp.connect(n.peak); n.peak.connect(n.shelf); n.shelf.connect(n.comp);
-  n.comp.connect(n.vol); n.vol.connect(n.wet); n.wet.connect(n.clip);
-  n.dry.connect(n.clip);
-  n.clip.connect(n.master); n.master.connect(n.outAn); n.master.connect(c.destination);
+  // mic -> highpass -> speech lift -> lowpass -> compressor -> volume -> hard cap -> out
+  n.hp.connect(n.peak); n.peak.connect(n.lp); n.lp.connect(n.comp);
+  n.comp.connect(n.vol); n.vol.connect(n.clip);
+  n.clip.connect(n.outAn); n.clip.connect(c.destination);
 }
-function ramp(param, value){
-  if (!S.ctx) return;
-  param.setTargetAtTime(value, S.ctx.currentTime, 0.03);
-}
+function ramp(param, value){ if (S.ctx) param.setTargetAtTime(value, S.ctx.currentTime, 0.03); }
 function applyVolume(){
-  $('vol').value = S.vol;
-  $('volOut').textContent = S.vol + ' of 10';
-  if (S.n) ramp(S.n.vol.gain, Math.pow(10, (VOL_MIN_DB + VOL_STEP_DB * S.vol) / 20));
+  $('vol').value = S.amp.vol;
+  $('volOut').textContent = S.amp.vol + ' of 10';
+  $('vol').setAttribute('aria-valuetext', S.amp.vol + ' of 10');
+  if (S.n) ramp(S.n.vol.gain, Math.pow(10, (VOL_MIN_DB + VOL_STEP_DB * S.amp.vol) / 20));
 }
-function applyPreset(){
-  var p = PRESETS[S.preset];
-  document.querySelectorAll('[data-preset]').forEach(function(b){
-    b.setAttribute('aria-pressed', String(b.dataset.preset === S.preset));
-  });
-  $('presetNote').textContent = p.note;
+function applySound(){
+  const p = SOUND[S.amp.focus ? 'focus' : 'everyday'];
+  paintToggle($('focus'), S.amp.focus);
   if (!S.n) return;
-  ramp(S.n.hp.frequency, p.hp);
-  ramp(S.n.peak.frequency, p.peakF); ramp(S.n.peak.gain, p.peakG); S.n.peak.Q.value = p.peakQ;
-  ramp(S.n.shelf.gain, p.shelfG);
+  ramp(S.n.hp.frequency, p.hp); ramp(S.n.lp.frequency, p.lp);
+  ramp(S.n.peak.frequency, p.peakF); ramp(S.n.peak.gain, p.peakG);
   ramp(S.n.comp.threshold, p.thr); ramp(S.n.comp.ratio, p.ratio);
   if (S.stream && p.ns !== S.ns) openMic().catch(micFailed);
 }
 async function openMic(){
-  var p = PRESETS[S.preset];
+  const p = SOUND[S.amp.focus ? 'focus' : 'everyday'];
   if (S.stream) {
     try { S.src.disconnect(); } catch (e) {}
-    S.stream.getTracks().forEach(function(t){ t.onended = null; t.stop(); });
+    S.stream.getTracks().forEach(t => { t.onended = null; t.stop(); });
     S.stream = null;
   }
-  var audio = { echoCancellation:false, autoGainControl:false, noiseSuppression:p.ns, channelCount:1 };
-  if (S.deviceId) audio.deviceId = { exact:S.deviceId };
-  var stream = await navigator.mediaDevices.getUserMedia({ audio:audio });
-  S.stream = stream; S.ns = p.ns;
-  S.src = S.ctx.createMediaStreamSource(stream);
-  S.src.connect(S.n.hp); S.src.connect(S.n.dry); S.src.connect(S.n.inAn);
-  var track = stream.getAudioTracks()[0];
-  track.onmute = function(){
-    setNotice('micmute', 'The microphone went quiet. Some phones cannot run captions and sound together. Turn captions off to bring the sound back.');
-  };
-  track.onunmute = function(){ setNotice('micmute', null); };
-  track.onended = function(){ if (S.running) micFailed({ name:'Ended' }); };
+  const audio = { echoCancellation:false, autoGainControl:false, noiseSuppression:p.ns, channelCount:1 };
+  if (S.amp.deviceId) audio.deviceId = { exact:S.amp.deviceId };
+  const ms = await navigator.mediaDevices.getUserMedia({ audio });
+  if (!S.ctx) { ms.getTracks().forEach(t => t.stop()); return; }
+  S.stream = ms; S.ns = p.ns;
+  S.src = S.ctx.createMediaStreamSource(ms);
+  S.src.connect(S.n.hp);
+  const track = ms.getAudioTracks()[0];
+  track.onmute = () => setNotice('micmute', 'The microphone went quiet. Some phones cannot run captions and sound together. Turn sound off in Settings to keep captions going.');
+  track.onunmute = () => setNotice('micmute', null);
+  track.onended = () => { if (S.ctx) micFailed({ name:'Ended' }); };
   setNotice('mic', null);
 }
 function micErrorText(e){
-  var name = e && e.name;
+  const name = e && e.name;
   if (name === 'NotAllowedError' || name === 'SecurityError')
-    return 'Microphone access is blocked. Allow the microphone for this page in the browser settings, then start again. If this page is showing inside another app, open it in its own browser tab.';
+    return 'Earshot needs your microphone for sound. Allow access in your browser settings.';
   if (name === 'NotFoundError' || name === 'OverconstrainedError')
-    return 'No microphone was found. Plug one in or choose a different one.';
+    return 'No microphone was found. Plug one in or choose a different one in Settings.';
   if (name === 'NotReadableError')
-    return 'Another app is using the microphone. Close it, then start again.';
+    return 'Another app is using the microphone. Close it, then try again.';
   if (name === 'Ended')
-    return 'The microphone was disconnected. Choose a microphone to carry on.';
-  return 'The microphone could not start. Try again, or open this page in Chrome.';
+    return 'The microphone was disconnected. Choose a microphone in Settings.';
+  return 'Sound could not start. Try again, or open Earshot in Chrome.';
 }
 function micFailed(e){ setNotice('mic', micErrorText(e)); listMics(); }
 
-async function listMics(){
-  var sel = $('mic');
+async function startAmp(){
+  if (S.ctx) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setNotice('mic', micErrorText(null)); return; }
   try {
-    var all = await navigator.mediaDevices.enumerateDevices();
-    var mics = all.filter(function(d){ return d.kind === 'audioinput'; });
+    const AC = window.AudioContext || window.webkitAudioContext;
+    S.ctx = new AC({ latencyHint:'interactive' });
+    buildChain(); applyVolume(); applySound();
+    await openMic();
+    if (!S.ctx) return;
+    await S.ctx.resume();
+  } catch (e) { stopAmp(); micFailed(e); return; }
+  S.lastDelay = 0; S.limitSince = 0;
+  S.raf = requestAnimationFrame(tick);
+  listMics();
+}
+function stopAmp(){
+  cancelAnimationFrame(S.raf);
+  if (S.stream) S.stream.getTracks().forEach(t => { t.onended = null; t.stop(); });
+  if (S.ctx) { try { S.ctx.close(); } catch (e) {} }
+  S.stream = null; S.src = null; S.ctx = null; S.n = null;
+  limitOn = false; setNotice('limit', null); setNotice('delay', null); setNotice('micmute', null);
+  $('delay').textContent = '';
+}
+async function listMics(){
+  const sel = $('mic');
+  try {
+    const mics = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audioinput');
     sel.textContent = '';
-    mics.forEach(function(d, i){
-      var o = document.createElement('option');
+    mics.forEach((d, i) => {
+      const o = document.createElement('option');
       o.value = d.deviceId; o.textContent = d.label || ('Microphone ' + (i + 1));
       sel.appendChild(o);
     });
-    var cur = S.stream && S.stream.getAudioTracks()[0].getSettings().deviceId;
+    const cur = S.stream && S.stream.getAudioTracks()[0].getSettings().deviceId;
     if (cur) sel.value = cur;
     $('micGroup').hidden = mics.length < 2;
   } catch (e) { $('micGroup').hidden = true; }
 }
 
-/* ---------- Meter, limit and delay readouts ---------- */
-function rmsDb(an){
-  an.getFloatTimeDomainData(buf);
-  var sum = 0, peak = 0;
-  for (var i = 0; i < buf.length; i++) { var v = buf[i]; sum += v * v; if (Math.abs(v) > peak) peak = Math.abs(v); }
-  return { db: 10 * Math.log10(sum / buf.length + 1e-12), peak: peak };
-}
+/* Loudness-limit and delay readouts */
+const buf = new Float32Array(1024);
+let limitOn = false, limitOff = 0;
 function tick(now){
-  if (!S.running || !S.ctx) return;
-  var inp = rmsDb(S.n.inAn);
-  var pct = Math.max(0, Math.min(100, (inp.db + 60) / 50 * 100));
-  $('meterFill').style.width = pct.toFixed(0) + '%';
-  if (inp.db > -50) S.lastLoud = now;
-  setQuiet(!S.paused && now - S.lastLoud > 7000);
-
-  var out = rmsDb(S.n.outAn);
-  if (out.peak > CEILING * 0.9) { if (!S.limitSince) S.limitSince = now; } else S.limitSince = 0;
+  if (!S.ctx || !S.n) return;
+  S.n.outAn.getFloatTimeDomainData(buf);
+  let peak = 0; for (let i = 0; i < buf.length; i++) { const v = Math.abs(buf[i]); if (v > peak) peak = v; }
+  if (peak > CEILING * 0.9) { if (!S.limitSince) S.limitSince = now; } else S.limitSince = 0;
   setLimit(S.limitSince && now - S.limitSince > 400);
-
   if (now - S.lastDelay > 1000) { S.lastDelay = now; showDelay(); }
   S.raf = requestAnimationFrame(tick);
 }
-var quietOn = false, limitOn = false, limitOff = 0;
-function setQuiet(on){
-  if (on === quietOn) return; quietOn = on;
-  setNotice('quiet', on ? 'Very little sound is reaching the microphone. Move this device closer to the person speaking.' : null);
-}
 function setLimit(on){
-  if (on) { limitOff = 0; if (!limitOn) { limitOn = true; setNotice('limit', 'At the loudness limit. Turning up further will not make it louder. Move the microphone closer instead.'); } }
+  if (on) { limitOff = 0; if (!limitOn) { limitOn = true; setNotice('limit', 'Sound is at the loudness limit. Turning up will not make it louder. Move the device closer to the speaker instead.'); } }
   else if (limitOn) { if (!limitOff) limitOff = performance.now(); else if (performance.now() - limitOff > 2500) { limitOn = false; setNotice('limit', null); } }
 }
 function showDelay(){
-  var c = S.ctx, t = S.stream && S.stream.getAudioTracks()[0];
-  var inLat = 0; try { inLat = (t && t.getSettings().latency) || 0; } catch (e) {}
-  var ms = Math.round(((c.baseLatency || 0) + (c.outputLatency || 0) + inLat) * 1000 + 6);
-  $('delay').textContent = 'Delay about ' + ms + ' ms';
-  setNotice('delay', ms > 60 ? 'This device adds a delay the listener may hear as an echo. A laptop with wired headphones is usually quicker.' : null);
+  const c = S.ctx, t = S.stream && S.stream.getAudioTracks()[0];
+  let inLat = 0; try { inLat = (t && t.getSettings().latency) || 0; } catch (e) {}
+  const ms = Math.round(((c.baseLatency || 0) + (c.outputLatency || 0) + inLat) * 1000 + 6);
+  $('delay').textContent = 'Sound delay about ' + ms + ' ms.';
+  setNotice('delay', ms > 100 ? 'This device adds a sound delay you may hear as an echo. A laptop with wired headphones is usually quicker.' : null);
 }
 
-/* ---------- Captions ---------- */
-function linesBox(){ return $('lines'); }
-function showEmpty(){
-  var box = linesBox(); box.textContent = '';
-  var p = document.createElement('p'); p.className = 'empty';
-  p.textContent = S.captions ? 'Words appear here as people speak.' : 'Captions are off. Typed replies still show here.';
-  box.appendChild(p);
-}
-function scrollDown(){ var b = linesBox(); b.scrollTop = b.scrollHeight; }
-function interimEl(){ return linesBox().querySelector('p.interim'); }
-function addLine(kind, text){
-  if (!text) return;
-  var box = linesBox();
-  var empty = box.querySelector('p.empty'); if (empty) empty.remove();
-  var live = interimEl();
-  if (kind === 'heard') box.querySelectorAll('p.heard').forEach(function(p){ p.classList.add('old'); });
-  var p = document.createElement('p'); p.className = kind; p.textContent = text;
-  if (live) box.insertBefore(p, live); else box.appendChild(p);
-  while (box.children.length > 60) box.removeChild(box.firstChild);
-  scrollDown();
-}
-function setInterim(text){
-  var box = linesBox(), live = interimEl();
-  if (!text) { if (live) live.remove(); return; }
-  var empty = box.querySelector('p.empty'); if (empty) empty.remove();
-  if (!live) { live = document.createElement('p'); live.className = 'interim'; box.appendChild(live); }
-  live.textContent = text; scrollDown();
-}
-function startCaptions(){
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { captionsOff('Captions are not available in this browser. Sound still works. Chrome and Edge support captions.'); return; }
-  var rec = new SR(); S.rec = rec;
-  rec.continuous = true; rec.interimResults = true; rec.lang = S.lang;
-  rec.onresult = function(e){
-    var interim = '';
-    for (var i = e.resultIndex; i < e.results.length; i++) {
-      var r = e.results[i];
-      if (r.isFinal) addLine('heard', r[0].transcript.trim()); else interim += r[0].transcript;
-    }
-    setInterim(interim.trim());
-    S.recEnds.length = 0;
-  };
-  rec.onerror = function(e){
-    if (e.error === 'not-allowed' || e.error === 'service-not-allowed')
-      captionsOff('Captions were blocked by the browser. Sound still works.');
-    else if (e.error === 'network')
-      setNotice('captions', 'Captions need an internet connection. Sound still works.');
-    else if (e.error === 'language-not-supported')
-      captionsOff('This browser cannot caption that language. Sound still works.');
-  };
-  rec.onend = function(){
-    if (S.rec !== rec || !S.running || !S.captions) return;
-    var now = Date.now();
-    S.recEnds.push(now);
-    S.recEnds = S.recEnds.filter(function(t){ return now - t < 8000; });
-    if (S.recEnds.length > 6) { captionsOff('Captions keep stopping on this device. Sound still works.'); return; }
-    setTimeout(function(){ if (S.rec === rec && S.running && S.captions) { try { rec.start(); } catch (e) {} } }, 300);
-  };
-  try { rec.start(); setNotice('captions', null); } catch (e) { captionsOff('Captions could not start. Sound still works.'); }
-}
-function stopCaptions(){
-  var rec = S.rec; S.rec = null;
-  if (rec) { rec.onend = null; rec.onresult = null; rec.onerror = null; try { rec.abort(); } catch (e) {} }
-  setInterim('');
-}
-function captionsOff(reason){
-  S.captions = false; stopCaptions(); paintCapToggle();
-  setNotice('captions', reason || null);
-  if (linesBox().querySelector('p.empty') || !linesBox().firstChild) showEmpty();
-}
-function paintCapToggle(){
-  var b = $('capToggle'); b.setAttribute('aria-pressed', String(S.captions)); b.textContent = S.captions ? 'On' : 'Off';
-}
-function paintCapSize(){ linesBox().style.setProperty('--cap-size', CAP_SIZES[S.capSize]); }
-
-/* ---------- Start, pause, end ---------- */
-function showLive(){
-  $('setup').hidden = true; $('live').hidden = false;
-  S.running = true; S.paused = false; S.vol = VOL_START;
-  applyVolume(); applyPreset(); paintCapToggle(); paintCapSize(); paintPause(); showEmpty();
-  window.scrollTo(0, 0);
-}
-function paintPause(){
-  var st = $('status'), b = $('pause');
-  st.classList.toggle('off', S.paused || S.sample);
-  $('statusText').textContent = S.sample ? 'Sample, no sound' : (S.paused ? 'Sound paused' : 'Listening');
-  b.setAttribute('aria-pressed', String(S.paused));
-  b.textContent = S.paused ? 'Resume sound' : 'Pause sound';
-  b.hidden = S.sample;
-  if (S.n) ramp(S.n.master.gain, S.paused ? 0 : 1);
-}
-async function keepAwake(){
-  try { if (navigator.wakeLock) S.wake = await navigator.wakeLock.request('screen'); } catch (e) {}
-}
-async function start(){
-  var msg = $('setupMsg'); msg.hidden = true;
-  if (!$('phones').checked) {
-    msg.textContent = 'Plug in headphones and tick the box first. Without them the speaker feeds back into the microphone.';
-    msg.hidden = false; $('phones').focus(); return;
-  }
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    msg.textContent = 'This browser cannot use the microphone here. Open this page in Chrome or Safari.';
-    msg.hidden = false; return;
-  }
-  var AC = window.AudioContext || window.webkitAudioContext;
-  try {
-    S.ctx = new AC({ latencyHint:'interactive' });
-    buildChain();
-    S.sample = false; S.lang = $('lang').value; S.captions = true; S.notices = {};
-    await openMic();
-    await S.ctx.resume();
-  } catch (e) {
-    teardownAudio();
-    msg.textContent = micErrorText(e); msg.hidden = false; return;
-  }
-  showLive(); setNotice('mic', null);
-  S.lastLoud = performance.now(); S.lastDelay = 0;
-  S.raf = requestAnimationFrame(tick);
-  listMics(); keepAwake(); startCaptions();
-}
-function startSample(){
-  S.sample = true; S.captions = true; S.notices = {};
-  showLive();
-  setNotice('sample', 'This is a made-up conversation to show the screen. No microphone or sound is in use.');
-  $('micGroup').hidden = true; $('delay').textContent = ''; $('meterFill').style.width = '0%';
-  var t = 700;
-  SAMPLE.forEach(function(item){
-    var words = item[1].split(' ');
-    if (item[0] === 'heard') {
-      words.forEach(function(_, i){
-        S.timers.push(setTimeout(function(){ if (S.captions) setInterim(words.slice(0, i + 1).join(' ')); }, t));
-        t += 170;
-      });
-      S.timers.push(setTimeout(function(){ setInterim(''); if (S.captions) addLine('heard', item[1]); }, t));
-      t += 1100;
-    } else {
-      t += 500;
-      S.timers.push(setTimeout(function(){ addLine('reply', item[1]); }, t));
-      t += 1500;
-    }
-  });
-}
-function teardownAudio(){
-  if (S.stream) { S.stream.getTracks().forEach(function(t){ t.onended = null; t.stop(); }); }
-  if (S.ctx) { try { S.ctx.close(); } catch (e) {} }
-  S.stream = null; S.src = null; S.ctx = null; S.n = null;
-}
-function end(){
-  S.running = false;
-  cancelAnimationFrame(S.raf);
-  S.timers.forEach(clearTimeout); S.timers = [];
-  stopCaptions(); teardownAudio();
-  if (S.wake) { try { S.wake.release(); } catch (e) {} S.wake = null; }
-  quietOn = false; limitOn = false; S.limitSince = 0; S.notices = {}; setNotice('x', null);
-  linesBox().textContent = ''; $('replyText').value = '';
-  S.sample = false; S.deviceId = null;
-  $('live').hidden = true; $('setup').hidden = false; window.scrollTo(0, 0);
+function paintAmp(){
+  paintToggle($('ampToggle'), S.amp.on);
+  $('ampControls').hidden = !S.amp.on;
 }
 
 /* ---------- Wiring ---------- */
-$('start').addEventListener('click', start);
-$('sample').addEventListener('click', startSample);
-$('end').addEventListener('click', end);
-$('pause').addEventListener('click', function(){ S.paused = !S.paused; paintPause(); });
-
-$('vol').addEventListener('input', function(e){ S.vol = Number(e.target.value); applyVolume(); });
-$('volDown').addEventListener('click', function(){ S.vol = Math.max(0, S.vol - 1); applyVolume(); });
-$('volUp').addEventListener('click', function(){ S.vol = Math.min(10, S.vol + 1); applyVolume(); });
-
-document.querySelectorAll('[data-preset]').forEach(function(b){
-  b.addEventListener('click', function(){ S.preset = b.dataset.preset; applyPreset(); });
+$('listen').addEventListener('click', () => {
+  if (S.sample) stopSample();
+  else if (S.listening) stopListening();
+  else startListening();
 });
+$('sample').addEventListener('click', startSample);
+$('clear').addEventListener('click', clearTranscript);
+$('jump').addEventListener('click', toLive);
 
-(function(){
-  var b = $('compare');
-  function set(plain){
-    b.classList.toggle('down', plain);
-    if (!S.n) return;
-    ramp(S.n.wet.gain, plain ? 0 : 1); ramp(S.n.dry.gain, plain ? 1 : 0);
-  }
-  b.addEventListener('pointerdown', function(e){ e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {} set(true); });
-  ['pointerup','pointercancel','lostpointercapture','blur'].forEach(function(ev){ b.addEventListener(ev, function(){ set(false); }); });
-  b.addEventListener('keydown', function(e){ if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); set(true); } });
-  b.addEventListener('keyup', function(e){ if (e.key === ' ' || e.key === 'Enter') set(false); });
-  b.addEventListener('contextmenu', function(e){ e.preventDefault(); });
-})();
+document.querySelectorAll('[data-speaker]').forEach(b => b.addEventListener('click', () => setSpeaker(b.dataset.speaker)));
+document.querySelectorAll('[data-phrase]').forEach(b => b.addEventListener('click', () => showPhrase(b.dataset.phrase)));
+$('flip').addEventListener('click', () => $('show').classList.toggle('flipped'));
+$('showDone').addEventListener('click', () => $('show').close());
 
-$('mic').addEventListener('change', function(e){
-  S.deviceId = e.target.value;
-  openMic().then(listMics).catch(micFailed);
+$('openSettings').addEventListener('click', () => $('settings').showModal());
+$('closeSettings').addEventListener('click', () => $('settings').close());
+$('settings').addEventListener('click', e => { if (e.target === $('settings')) $('settings').close(); });
+
+document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => {
+  S.capSize = Number(b.dataset.size); save('capSize', S.capSize); paintSize();
+}));
+document.querySelectorAll('[data-theme-choice]').forEach(b => b.addEventListener('click', () => {
+  S.theme = b.dataset.themeChoice; save('theme', S.theme); paintTheme();
+}));
+$('lang').addEventListener('change', e => {
+  S.lang = e.target.value;
+  if (S.listening && engine) { finishLine(); engine.stop(); engine.start(S.lang); }
+});
+$('voice').addEventListener('click', () => { S.voice = !S.voice; paintToggle($('voice'), S.voice); });
+
+$('ampToggle').addEventListener('click', () => {
+  if (S.amp.on) { S.amp.on = false; stopAmp(); setNotice('mic', null); paintAmp(); return; }
+  $('ampCheck').hidden = false; $('ampToggle').hidden = true; $('ampConfirm').focus();
+});
+$('ampCancel').addEventListener('click', () => {
+  $('ampCheck').hidden = true; $('ampToggle').hidden = false; $('ampToggle').focus();
+});
+$('ampConfirm').addEventListener('click', () => {
+  $('ampCheck').hidden = true; $('ampToggle').hidden = false;
+  S.amp.on = true; S.amp.vol = VOL_START; applyVolume(); paintAmp(); $('ampToggle').focus();
+  if (S.listening) startAmp();
+});
+$('vol').addEventListener('input', e => { S.amp.vol = Number(e.target.value); applyVolume(); });
+$('volDown').addEventListener('click', () => { S.amp.vol = Math.max(0, S.amp.vol - 1); applyVolume(); });
+$('volUp').addEventListener('click', () => { S.amp.vol = Math.min(10, S.amp.vol + 1); applyVolume(); });
+$('focus').addEventListener('click', () => { S.amp.focus = !S.amp.focus; applySound(); });
+$('mic').addEventListener('change', e => {
+  S.amp.deviceId = e.target.value;
+  if (S.ctx) openMic().then(listMics).catch(micFailed);
 });
 if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
-  navigator.mediaDevices.addEventListener('devicechange', function(){ if (S.running && !S.sample) listMics(); });
+  navigator.mediaDevices.addEventListener('devicechange', () => { if (S.ctx) listMics(); });
 }
 
-$('capToggle').addEventListener('click', function(){
-  S.captions = !S.captions; paintCapToggle();
-  if (S.captions) { setNotice('captions', null); S.recEnds.length = 0; if (!S.sample) startCaptions(); }
-  else { stopCaptions(); setNotice('micmute', null); }
-  if (!linesBox().firstChild || linesBox().querySelector('p.empty')) showEmpty();
-});
-$('smaller').addEventListener('click', function(){ S.capSize = Math.max(0, S.capSize - 1); paintCapSize(); scrollDown(); });
-$('bigger').addEventListener('click', function(){ S.capSize = Math.min(CAP_SIZES.length - 1, S.capSize + 1); paintCapSize(); scrollDown(); });
-
-function sendReply(text){
-  text = (text || '').trim(); if (!text) return;
-  addLine('reply', text);
-}
-document.querySelectorAll('[data-reply]').forEach(function(b){
-  b.addEventListener('click', function(){ sendReply(b.dataset.reply); });
-});
-$('replyShow').addEventListener('click', function(){ var i = $('replyText'); sendReply(i.value); i.value = ''; i.focus(); });
-$('replyText').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); $('replyShow').click(); } });
-
-document.addEventListener('visibilitychange', function(){
-  if (document.visibilityState === 'visible' && S.running && !S.sample) {
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && S.listening) {
     keepAwake(); if (S.ctx && S.ctx.state === 'suspended') S.ctx.resume();
   }
 });
 
-applyVolume(); applyPreset();
+/* ---------- Init ---------- */
+const savedSize = Number(load('capSize'));
+if (savedSize >= 0 && savedSize < CAP_SIZES.length) S.capSize = savedSize;
+const savedTheme = load('theme');
+if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') S.theme = savedTheme;
+paintSize(); paintTheme(); paintSpeaker(); paintListen(); paintAmp(); applyVolume(); applySound();
 })();
 </script>
 </body>
