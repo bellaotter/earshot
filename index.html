@@ -22,14 +22,15 @@
   --es-radius-card:12px; --es-radius-pill:999px; --es-border:1px solid var(--es-line);
   --es-target-min:44px; --es-button-primary-h:56px; --es-content-max:720px;
   --es-word-fade:120ms; --es-ease:cubic-bezier(0.2,0,0,1);
+  --es-bubble:#E9E9EB;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --es-paper:#0D0D0D; --es-surface:#171717; --es-ink:#FAFAFA; --es-ink-muted:#A3A3A3; --es-line:#2A2A2A; --es-live:#F04438;
+    --es-paper:#0D0D0D; --es-surface:#171717; --es-ink:#FAFAFA; --es-ink-muted:#A3A3A3; --es-line:#2A2A2A; --es-live:#F04438; --es-bubble:#262628;
   }
 }
 :root[data-theme="dark"]{
-  --es-paper:#0D0D0D; --es-surface:#171717; --es-ink:#FAFAFA; --es-ink-muted:#A3A3A3; --es-line:#2A2A2A; --es-live:#F04438;
+  --es-paper:#0D0D0D; --es-surface:#171717; --es-ink:#FAFAFA; --es-ink-muted:#A3A3A3; --es-line:#2A2A2A; --es-live:#F04438; --es-bubble:#262628;
 }
 @media (prefers-reduced-motion: reduce){ :root{ --es-word-fade:0ms; } }
 
@@ -141,23 +142,50 @@ input[type="email"],input[type="password"]{width:100%;min-height:var(--es-target
 .save-prompt{padding:var(--es-space-4);border:1px solid var(--es-ink);border-radius:var(--es-radius-card);background:var(--es-surface)}
 .save-prompt p{font-size:var(--es-text-md)}
 .save-prompt .actions{display:flex;flex-wrap:wrap;gap:var(--es-space-2);margin-top:var(--es-space-3)}
-.page{max-width:var(--es-content-max);margin:0 auto;display:flex;flex-direction:column;gap:var(--es-space-5);
-  padding:calc(var(--es-space-4) + env(safe-area-inset-top,0px)) var(--es-space-4) calc(var(--es-space-7) + env(safe-area-inset-bottom,0px))}
-.page-title{font-weight:500;font-size:var(--es-question-size);line-height:1.2}
-.records{list-style:none;margin:0;padding:0;border-top:var(--es-border)}
-.records li{border-bottom:var(--es-border)}
-.record-btn{appearance:none;display:flex;flex-direction:column;gap:var(--es-space-1);width:100%;min-height:var(--es-target-min);padding:var(--es-space-4) 0;border:0;background:none;color:var(--es-ink);text-align:left;cursor:pointer}
-.record-date{font-size:var(--es-text-lg);font-weight:500}
-.record-meta{font-size:var(--es-text-sm);color:var(--es-ink-muted)}
-.record-sum{font-size:var(--es-text-md);color:var(--es-ink-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.section-h{font-weight:500;font-size:var(--es-text-md);margin-bottom:var(--es-space-3)}
-.record-summary{font-size:var(--es-text-lg);line-height:1.5;max-width:60ch}
+.convos{height:100%;height:100dvh;display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr)}
+.sidebar{display:flex;flex-direction:column;min-height:0;border-right:var(--es-border);background:var(--es-surface)}
+.side-head{display:flex;align-items:center;gap:var(--es-space-3);padding:calc(var(--es-space-4) + env(safe-area-inset-top,0px)) var(--es-space-4) var(--es-space-3)}
+.side-head h1{font-weight:500;font-size:var(--es-text-lg)}
+.side-msg{padding:0 var(--es-space-4);font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+.records{flex:1;overflow-y:auto;list-style:none;margin:0;padding:0 var(--es-space-2) calc(var(--es-space-4) + env(safe-area-inset-bottom,0px))}
+.record-btn{appearance:none;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px var(--es-space-2);width:100%;padding:var(--es-space-3);border:0;border-radius:10px;background:none;color:var(--es-ink);text-align:left;cursor:pointer}
+.records li + li .record-btn{box-shadow:0 -1px 0 var(--es-line)}
+.records li + li .record-btn[aria-current="true"],.records li:has(.record-btn[aria-current="true"]) + li .record-btn{box-shadow:none}
+.record-date{font-weight:500;font-size:var(--es-text-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.record-time{font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+.record-sum{grid-column:1 / -1;font-size:var(--es-text-sm);line-height:1.35;color:var(--es-ink-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.record-btn[aria-current="true"]{background:var(--es-ink);color:var(--es-paper)}
+.record-btn[aria-current="true"] .record-time,.record-btn[aria-current="true"] .record-sum{color:color-mix(in srgb,var(--es-paper) 75%,transparent)}
+.thread{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--es-paper)}
+.thread-empty{margin:auto;font-size:var(--es-text-md);color:var(--es-ink-muted)}
+.thread-head{display:flex;align-items:center;gap:var(--es-space-3);padding:calc(var(--es-space-3) + env(safe-area-inset-top,0px)) var(--es-space-4) var(--es-space-3);border-bottom:var(--es-border)}
+.thread-back{display:none}
+.thread-title{flex:1;min-width:0;text-align:center}
+.thread-title h2{font-weight:500;font-size:var(--es-text-md)}
+.thread-title p{font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+.thread-head::before{content:"";width:var(--es-target-min);flex:none}
+.thread-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:var(--es-space-4);padding:var(--es-space-5) var(--es-space-5) calc(var(--es-space-7) + env(safe-area-inset-bottom,0px))}
+.summary-card{align-self:center;width:100%;max-width:560px;padding:var(--es-space-4) var(--es-space-5);border:var(--es-border);border-radius:var(--es-radius-card);background:var(--es-surface)}
+.summary-card h3{font-weight:500;font-size:var(--es-text-sm);color:var(--es-ink-muted);margin-bottom:var(--es-space-2)}
+.record-summary{font-size:var(--es-text-md);line-height:1.5}
 .record-summary ul{margin:0;padding-left:1.2em}
-.record-summary li + li,.record-summary p + p,.record-summary p + ul,.record-summary ul + p{margin-top:var(--es-space-2)}
+.record-summary li + li,.record-summary p + p,.record-summary p + ul,.record-summary ul + p{margin-top:var(--es-space-1)}
 .record-summary.muted{color:var(--es-ink-muted)}
 .record-summary + .pill{margin-top:var(--es-space-3)}
-.record-log{padding-top:var(--es-space-4);border-top:var(--es-border);font-family:var(--es-font-caption);font-size:var(--es-text-lg);line-height:var(--es-caption-leading)}
-.text.unsure{text-decoration:underline dotted;text-decoration-thickness:2px;text-underline-offset:.2em}
+.stamp{align-self:center;font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+.bubbles{display:flex;flex-direction:column;align-items:flex-start;gap:var(--es-space-2)}
+.bubble{max-width:min(78%,36rem);padding:10px 14px;border-radius:18px;background:var(--es-bubble);font-family:var(--es-font-caption);font-size:var(--es-text-lg);line-height:1.35;overflow-wrap:anywhere}
+.bubble .orig{margin-top:var(--es-space-1);font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+.bubble .unsure{text-decoration:underline dotted;text-decoration-thickness:2px;text-underline-offset:.2em}
+@media (max-width:760px){
+  .convos{grid-template-columns:minmax(0,1fr)}
+  .convos .thread{display:none}
+  .convos.open .sidebar{display:none}
+  .convos.open .thread{display:flex}
+  .thread-back{display:grid}
+  .thread-head::before{display:none}
+  .thread-body{padding-left:var(--es-space-4);padding-right:var(--es-space-4)}
+}
 </style>
 </head>
 <body>
@@ -383,35 +411,42 @@ input[type="email"],input[type="password"]{width:100%;min-height:var(--es-target
   </form>
 </main>
 
-<main class="page" id="records" hidden>
-  <header class="top">
-    <button class="icon-btn" id="recordsBack" aria-label="Back to captions">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-    </button>
-    <h1 class="page-title">Saved conversations</h1>
-  </header>
-  <p class="fine" id="recordsMsg" role="status" hidden></p>
-  <ul class="records" id="recordsList"></ul>
-</main>
+<main class="convos" id="records" hidden>
+  <aside class="sidebar" aria-label="Saved conversations">
+    <header class="side-head">
+      <button class="icon-btn" id="recordsBack" aria-label="Back to captions">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1>Saved conversations</h1>
+    </header>
+    <p class="side-msg" id="recordsMsg" role="status" hidden></p>
+    <ul class="records" id="recordsList"></ul>
+  </aside>
 
-<main class="page" id="record" hidden>
-  <header class="top">
-    <button class="icon-btn" id="recordBack" aria-label="Back to saved conversations">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-    </button>
-    <h1 class="page-title" id="recordTitle"></h1>
-  </header>
-  <p class="record-meta" id="recordMeta"></p>
-  <section aria-labelledby="sumH">
-    <h2 class="section-h" id="sumH">Summary</h2>
-    <div class="record-summary" id="recordSummary"></div>
-    <button class="pill" id="recordSummarize" hidden>Write a summary</button>
+  <section class="thread" id="record" aria-label="Conversation">
+    <p class="thread-empty" id="recordEmpty">Select a conversation to read it.</p>
+    <header class="thread-head" id="recordHead" hidden>
+      <button class="icon-btn thread-back" id="recordBack" aria-label="Back to saved conversations">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="thread-title">
+        <h2 id="recordTitle"></h2>
+        <p id="recordMeta"></p>
+      </div>
+      <button class="icon-btn" id="recordDelete" aria-label="Delete conversation">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>
+      </button>
+    </header>
+    <div class="thread-body" id="recordBody" hidden>
+      <section class="summary-card" aria-labelledby="sumH">
+        <h3 id="sumH">Summary</h3>
+        <div class="record-summary" id="recordSummary"></div>
+        <button class="pill" id="recordSummarize" hidden>Write a summary</button>
+      </section>
+      <p class="stamp" id="recordStamp"></p>
+      <div class="bubbles" id="recordLog" aria-label="Captions"></div>
+    </div>
   </section>
-  <section aria-labelledby="logH">
-    <h2 class="section-h" id="logH">Captions</h2>
-    <div class="record-log" id="recordLog"></div>
-  </section>
-  <div><button class="pill" id="recordDelete">Delete conversation</button></div>
 </main>
 
 <script>
@@ -1063,7 +1098,7 @@ var MODES = {
 /* ---------- Views ---------- */
 function show(view){
   document.querySelector('.app').hidden = view !== 'app';
-  ['account', 'records', 'record'].forEach(function(id){ $(id).hidden = view !== id; });
+  ['account', 'records'].forEach(function(id){ $(id).hidden = view !== id; });
   window.scrollTo(0, 0);
 }
 function say(err, ok){
@@ -1160,7 +1195,7 @@ function setUser(u){
   A.user = u; paintBar();
   if (!u) {
     hidePrompt();
-    if (!$('records').hidden || !$('record').hidden) show('app');
+    if (!$('records').hidden) show('app');
   }
 }
 
@@ -1264,50 +1299,95 @@ async function saveSession(){
   setTimeout(function(){ if (!R.pending) $('savePrompt').hidden = true; }, 3000);
 }
 
-/* List */
+/* Two panes, like Messages: conversations on the left, the selected one on the right.
+   On a phone only one pane shows at a time. */
+var narrow = window.matchMedia('(max-width:760px)');
+var weekdayFmt = new Intl.DateTimeFormat(undefined, { weekday:'long' });
+var shortDateFmt = new Intl.DateTimeFormat(undefined, { month:'short', day:'numeric', year:'numeric' });
+function dayLabel(iso){
+  var d = new Date(iso), today = new Date(); today.setHours(0, 0, 0, 0);
+  var day = new Date(d); day.setHours(0, 0, 0, 0);
+  var diff = Math.round((today - day) / 86400000);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Yesterday';
+  if (diff > 1 && diff < 7) return weekdayFmt.format(d);
+  return shortDateFmt.format(d);
+}
+function preview(rec){
+  if (rec.summary && wordCount(rec.lines) >= MIN_WORDS) return notesSnippet(rec.summary);
+  return rec.lines.length ? rec.lines[0].text : 'No captions';
+}
+
 function recordsMsg(text){ $('recordsMsg').textContent = text || ''; $('recordsMsg').hidden = !text; }
 async function openRecords(){
   if ($('settings').open) $('settings').close();
-  show('records'); recordsMsg('Loading…');
-  var r = await sb.from('sessions').select('id,started_at,ended_at,language,summary').order('started_at', { ascending:false });
+  R.current = null; $('records').classList.remove('open');
+  show('records'); paintThread(); recordsMsg('Loading…');
+  var r = await sb.from('sessions').select('*').order('started_at', { ascending:false });
   if (r.error) { recordsMsg('Could not load your conversations. Check your connection and try again.'); return; }
   R.list = r.data;
   paintRecords();
+  if (R.list.length && !narrow.matches) selectRecord(R.list[0].id, false);
 }
 function paintRecords(){
   var ul = $('recordsList'); ul.textContent = '';
   recordsMsg(R.list.length ? '' : 'No saved conversations yet. When you stop listening, Earshot asks whether to save the conversation.');
   R.list.forEach(function(rec){
     var li = document.createElement('li');
-    var b = document.createElement('button'); b.className = 'record-btn';
-    var d = document.createElement('span'); d.className = 'record-date'; d.textContent = dateFmt.format(new Date(rec.started_at));
-    var m = document.createElement('span'); m.className = 'record-meta'; m.textContent = metaLine(rec);
-    var s = document.createElement('span'); s.className = 'record-sum'; s.textContent = rec.summary ? notesSnippet(rec.summary) : 'No summary';
-    b.append(d, m, s);
-    b.addEventListener('click', function(){ openRecord(rec.id); });
+    var b = document.createElement('button'); b.className = 'record-btn'; b.dataset.id = rec.id;
+    if (R.current && R.current.id === rec.id) b.setAttribute('aria-current', 'true');
+    var d = document.createElement('span'); d.className = 'record-date'; d.textContent = dayLabel(rec.started_at);
+    var t = document.createElement('span'); t.className = 'record-time'; t.textContent = timeFmt.format(new Date(rec.started_at));
+    var s = document.createElement('span'); s.className = 'record-sum'; s.textContent = preview(rec);
+    b.append(d, t, s);
+    b.addEventListener('click', function(){ selectRecord(rec.id, true); });
     li.appendChild(b); ul.appendChild(li);
   });
 }
+/* Up and down arrows move through the list, like Messages. */
+$('recordsList').addEventListener('keydown', function(e){
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+  var i = R.list.findIndex(function(x){ return R.current && x.id === R.current.id; });
+  var next = R.list[Math.max(0, Math.min(R.list.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))];
+  if (!next) return;
+  e.preventDefault();
+  selectRecord(next.id, false);
+  var b = $('recordsList').querySelector('[data-id="' + next.id + '"]');
+  if (b) { b.focus(); b.scrollIntoView({ block:'nearest' }); }
+});
 
-/* Detail */
-async function openRecord(id){
-  var r = await sb.from('sessions').select('*').eq('id', id).single();
-  if (r.error) { recordsMsg('Could not open that conversation. Try again.'); return; }
-  var rec = R.current = r.data;
+function selectRecord(id, fromClick){
+  R.current = R.list.find(function(x){ return x.id === id; }) || null;
+  $('recordsList').querySelectorAll('.record-btn').forEach(function(b){
+    if (b.dataset.id === id) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+  });
+  paintThread();
+  if (R.current && narrow.matches) { $('records').classList.add('open'); if (fromClick) $('recordBack').focus(); }
+  $('recordBody').scrollTop = 0;
+}
+function paintThread(){
+  var rec = R.current;
+  $('recordEmpty').hidden = !!rec; $('recordHead').hidden = !rec; $('recordBody').hidden = !rec;
+  if (!rec) return;
   $('recordTitle').textContent = dateFmt.format(new Date(rec.started_at));
-  $('recordMeta').textContent = metaLine(rec);
+  $('recordMeta').textContent = [duration(rec.started_at, rec.ended_at), langLabel(rec.language)].filter(Boolean).join(' · ');
+  $('recordStamp').textContent = dayLabel(rec.started_at) + ' ' + timeFmt.format(new Date(rec.started_at));
   paintSummary();
   var log = $('recordLog'); log.textContent = '';
   rec.lines.forEach(function(l){
-    var el = document.createElement('div'); el.className = 'line';
-    if (l.translation) {
-      var t = document.createElement('p'); t.className = 'text'; t.dir = 'auto'; t.textContent = l.translation; el.appendChild(t);
-    }
-    var p = document.createElement('p'); p.className = 'text' + (l.translation ? ' orig' : '') + (l.unsure ? ' unsure' : '');
-    p.textContent = l.text; el.appendChild(p);
-    log.appendChild(el);
+    var b = document.createElement('div'); b.className = 'bubble';
+    var main = document.createElement('p'); main.dir = 'auto';
+    main.textContent = l.translation || l.text;
+    if (l.unsure) main.className = 'unsure';
+    b.appendChild(main);
+    if (l.translation) { var o = document.createElement('p'); o.className = 'orig'; o.textContent = l.text; b.appendChild(o); }
+    log.appendChild(b);
   });
-  show('record');
+}
+function closeThread(){
+  $('records').classList.remove('open');
+  var b = R.current && $('recordsList').querySelector('[data-id="' + R.current.id + '"]');
+  if (b) b.focus();
 }
 function summaryNote(text){
   var el = $('recordSummary'); el.textContent = text; el.classList.add('muted');
@@ -1330,25 +1410,26 @@ async function summarizeCurrent(){
   b.disabled = false;
   if (!summary) { summaryNote('A summary could not be written on this device.'); return; }
   var r = await sb.from('sessions').update({ summary:summary }).eq('id', rec.id);
-  if (!r.error) { rec.summary = summary; R.list.forEach(function(x){ if (x.id === rec.id) x.summary = summary; }); }
+  if (!r.error) { rec.summary = summary; paintRecords(); }
   paintSummary();
   if (r.error) summaryNote('The new summary could not be saved. Check your connection and try again.');
 }
 async function deleteCurrent(){
   if (!confirm('Delete this conversation? This cannot be undone.')) return;
-  var id = R.current.id;
+  var id = R.current.id, i = R.list.indexOf(R.current);
   var r = await sb.from('sessions').delete().eq('id', id);
   if (r.error) { alert('Could not delete. Check your connection and try again.'); return; }
   R.list = R.list.filter(function(x){ return x.id !== id; });
-  R.current = null;
-  show('records'); paintRecords();
+  R.current = null; paintRecords(); paintThread();
+  var next = R.list[Math.min(i, R.list.length - 1)];
+  if (next && !narrow.matches) selectRecord(next.id, false); else closeThread();
 }
 
 $('saveYes').addEventListener('click', saveSession);
 $('saveNo').addEventListener('click', hidePrompt);
 $('openRecords').addEventListener('click', openRecords);
 $('recordsBack').addEventListener('click', function(){ show('app'); });
-$('recordBack').addEventListener('click', function(){ show('records'); });
+$('recordBack').addEventListener('click', closeThread);
 $('recordSummarize').addEventListener('click', summarizeCurrent);
 $('recordDelete').addEventListener('click', deleteCurrent);
 
