@@ -75,15 +75,12 @@ svg.icon{width:var(--es-space-5);height:var(--es-space-5);fill:none;stroke:curre
 
 
 .stream-wrap{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
-.stream-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--es-space-2) var(--es-space-3);padding-bottom:var(--es-space-3);border-bottom:var(--es-border)}
 .label{font-size:var(--es-text-sm);color:var(--es-ink-muted)}
 @media (max-width:520px){
-  .stream-head .label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .lockup{font-size:var(--es-text-lg)}
 }
-.stream{flex:1;overflow-y:auto;padding:var(--es-space-4) 0 var(--es-space-7);font-family:var(--es-font-caption);font-size:var(--cap-size,var(--es-caption-size));line-height:var(--es-caption-leading)}
+.stream{flex:1;overflow-y:auto;border-top:var(--es-border);padding:var(--es-space-4) 0 var(--es-space-7);font-family:var(--es-font-caption);font-size:var(--cap-size,var(--es-caption-size));line-height:var(--es-caption-leading)}
 .line + .line{margin-top:var(--es-space-4)}
-.who{font-weight:700;font-size:var(--es-text-sm);color:var(--es-ink-muted);margin-bottom:var(--es-space-1)}
 .text{max-width:60ch;color:var(--es-ink);overflow-wrap:anywhere}
 .line.interim .text{color:var(--es-ink-muted)}
 .w{animation:wordIn var(--es-word-fade) var(--es-ease) both}
@@ -161,14 +158,6 @@ input[type="email"],input[type="password"]{width:100%;min-height:var(--es-target
   <div class="notice" id="notice" role="status" hidden></div>
 
   <section class="stream-wrap" aria-label="Captions">
-    <div class="stream-head">
-      <span class="label" id="spkLabel">Speaking</span>
-      <div class="seg" role="group" aria-labelledby="spkLabel">
-        <button data-speaker="Speaker 1" aria-pressed="true">Speaker 1</button>
-        <button data-speaker="Speaker 2" aria-pressed="false">Speaker 2</button>
-        <button data-speaker="Me" aria-pressed="false">Me</button>
-      </div>
-    </div>
     <div class="stream" id="stream" tabindex="0">
       <div class="empty" id="empty">
         <p class="empty-title">Tap Start listening when the conversation begins.</p>
@@ -376,18 +365,18 @@ const UNSURE = 0.7;
 
 /* Fictional sample, shown only in "Try a sample conversation" */
 const SAMPLE = [
-  ['Speaker 1','Hey, it is so good to see you. Can you read the captions okay?'],
-  ['Me','Yes, they are working well.'],
-  ['Speaker 1','We finally booked the trip to the coast for next month.'],
-  ['Me','That sounds lovely. Who is going?'],
-  ['Speaker 2','Just the four of us, and we are bringing the dog this time.', 0.62],
-  ['Me','I would love to see the photos when you get back.'],
-  ['Speaker 1','Of course. We should all get dinner before we leave.']
+  ['Hey, it is so good to see you. Can you read the captions okay?'],
+  ['Yes, they are working well.'],
+  ['We finally booked the trip to the coast for next month.'],
+  ['That sounds lovely. Who is going?'],
+  ['Just the four of us, and we are bringing the dog this time.', 0.62],
+  ['I would love to see the photos when you get back.'],
+  ['Of course. We should all get dinner before we leave.']
 ];
 
 const $ = id => document.getElementById(id);
 const S = {
-  listening:false, sample:false, timers:[], speaker:'Speaker 1', lastWho:null, line:null, follow:true,
+  listening:false, sample:false, timers:[], line:null, follow:true,
   capSize:0, theme:'system', target:'off', voice:false, lang:'en-US', notices:{}, wake:null,
   amp:{ on:false, vol:VOL_START, focus:false, deviceId:null },
   ctx:null, n:null, stream:null, src:null, ns:false, raf:0, lastDelay:0, limitSince:0
@@ -470,15 +459,13 @@ stream.addEventListener('scroll', () => { S.follow = atBottom(); if (S.follow) $
 function ensureLine(){
   if (S.line) return S.line;
   if (empty.parentNode) empty.remove();
+  // Lines are not labelled by speaker yet. Automatic speaker identification is planned
+  // and would add a label here; there is no manual speaker picker by design.
   const el = document.createElement('div'); el.className = 'line';
-  if (S.speaker !== S.lastWho) {
-    const who = document.createElement('div'); who.className = 'who'; who.textContent = S.speaker; el.appendChild(who);
-    S.lastWho = S.speaker;
-  }
   const p = document.createElement('p'); p.className = 'text'; el.appendChild(p);
   stream.appendChild(el);
   while (stream.children.length > 200) stream.removeChild(stream.firstChild);
-  S.line = { el, p, speaker:S.speaker };
+  S.line = { el, p };
   return S.line;
 }
 /* Keep words already on screen, add only new ones so each fades in once. */
@@ -581,17 +568,10 @@ function finishLine(){
 function clearTranscript(){
   finishLine();
   stream.textContent = ''; stream.appendChild(empty);
-  S.lastWho = null; toLive(); paintClear();
+  toLive(); paintClear();
 }
 
-/* ---------- Speaker, size, theme ---------- */
-function paintSpeaker(){
-  document.querySelectorAll('[data-speaker]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.speaker === S.speaker)));
-}
-function setSpeaker(name){
-  if (name === S.speaker) return;
-  finishLine(); S.speaker = name; paintSpeaker();
-}
+/* ---------- Size, theme ---------- */
 function paintSize(){
   stream.style.setProperty('--cap-size', CAP_SIZES[S.capSize]);
   document.querySelectorAll('[data-size]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.size) === S.capSize)));
@@ -653,16 +633,15 @@ function startSample(){
   S.sample = true; paintListen();
   prepareTranslator(captionSource());
   let t = 600;
-  SAMPLE.forEach(([who, text, conf]) => {
+  SAMPLE.forEach(([text, conf]) => {
     const words = text.split(' ');
-    S.timers.push(setTimeout(() => setSpeaker(who), t));
     words.forEach((_, i) => {
       t += 160;
       S.timers.push(setTimeout(() => showInterim(words.slice(0, i + 1).join(' ')), t));
     });
     t += 450;
     S.timers.push(setTimeout(() => commitFinal(text, conf || 0.92), t));
-    t += who === 'Me' ? 900 : 1400;
+    t += 1200;
   });
   S.timers.push(setTimeout(stopSample, t));
 }
@@ -831,7 +810,6 @@ $('sample').addEventListener('click', startSample);
 $('clear').addEventListener('click', clearTranscript);
 $('jump').addEventListener('click', toLive);
 
-document.querySelectorAll('[data-speaker]').forEach(b => b.addEventListener('click', () => setSpeaker(b.dataset.speaker)));
 document.querySelectorAll('[data-phrase]').forEach(b => b.addEventListener('click', () => showPhrase(b.dataset.phrase)));
 $('flip').addEventListener('click', () => $('show').classList.toggle('flipped'));
 $('showDone').addEventListener('click', () => $('show').close());
@@ -894,7 +872,7 @@ const savedTheme = load('theme');
 if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') S.theme = savedTheme;
 const savedTarget = load('target');
 if (savedTarget && $('target').querySelector('option[value="' + savedTarget + '"]')) S.target = savedTarget;
-paintTarget(); paintSize(); paintTheme(); paintSpeaker(); paintListen(); paintAmp(); applyVolume(); applySound();
+paintTarget(); paintSize(); paintTheme(); paintListen(); paintAmp(); applyVolume(); applySound();
 })();
 </script>
 
