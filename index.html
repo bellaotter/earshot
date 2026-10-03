@@ -268,6 +268,17 @@ input[type="email"],input[type="password"]{width:100%;min-height:var(--es-target
       <option value="ru">Русский</option>
     </select>
     <p class="hint" id="transHint">Translation happens on this device. The original words show underneath.</p>
+    <div class="row">
+      <span id="speakTrH">Speak translations aloud</span>
+      <button class="pill" id="speakTr" aria-pressed="false" aria-labelledby="speakTrH speakTr">Off</button>
+    </div>
+    <div class="check" id="speakCheck" hidden>
+      <p>Put on headphones. Through a speaker, Earshot would caption its own voice.</p>
+      <div class="actions">
+        <button class="pill solid" id="speakConfirm">Headphones are on</button>
+        <button class="pill" id="speakCancel">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <div class="group">
@@ -388,7 +399,7 @@ const SAMPLE = [
 const $ = id => document.getElementById(id);
 const S = {
   listening:false, sample:false, timers:[], speaker:'Speaker 1', lastWho:null, line:null, follow:true,
-  capSize:0, theme:'system', target:'off', voice:false, lang:'en-US', notices:{}, wake:null,
+  capSize:0, theme:'system', target:'off', speakTr:false, voice:false, lang:'en-US', notices:{}, wake:null,
   amp:{ on:false, vol:VOL_START, focus:false, deviceId:null },
   ctx:null, n:null, stream:null, src:null, ns:false, raf:0, lastDelay:0, limitSince:0
 };
@@ -503,6 +514,7 @@ function showInterim(text){
   line.el.classList.add('interim');
   renderWords(line.p, text);
   keepUp();
+  translateLive(line, text);
 }
 function commitFinal(text, conf){
   if (!text) return;
@@ -524,53 +536,119 @@ let langNames = null;
 try { langNames = new Intl.DisplayNames(['en'], { type:'language' }); } catch (e) {}
 function langName(code){ try { return (langNames && langNames.of(code)) || code; } catch (e) { return code; } }
 function captionSource(){ return S.sample ? 'en' : (SPEECH_TO_TEXT_LANG[S.lang] || S.lang.split('-')[0]); }
+const TRANS_IDLE = 'Translation happens on this device. The original words show underneath.';
+const ready = {};   // key -> Translator once downloaded, for instant live translation
+/* One message in Settings and, when it matters mid-conversation, on the main screen. */
+function transStatus(text, onScreen){
+  $('transHint').textContent = text || TRANS_IDLE;
+  setNotice('translate', onScreen ? text : null);
+}
 function prepareTranslator(src){
-  if (S.target === 'off' || !HAS_TRANSLATOR || src === S.target) return null;
+  if (S.target === 'off' || !HAS_TRANSLATOR) return null;
+  if (src === S.target) {
+    transStatus('Captions are already in ' + langName(src) + '. If people are speaking another language, change Language being spoken above.');
+    return null;
+  }
   const key = src + '>' + S.target;
   if (!translators[key]) {
     const opts = { sourceLanguage:src, targetLanguage:S.target };
+    const name = langName(opts.targetLanguage);
     const p = translators[key] = (async () => {
       const a = await Translator.availability(opts);
       if (a === 'unavailable') { const e = new Error(); e.name = 'Unavailable'; throw e; }
-      if (a !== 'available') setNotice('translate', 'Downloading ' + langName(S.target) + ' for translation…');
+      if (a !== 'available') transStatus('Downloading ' + name + ' for translation…', true);
       const t = await Translator.create({ ...opts, monitor(m){
-        m.addEventListener('downloadprogress', ev => setNotice('translate', 'Downloading ' + langName(opts.targetLanguage) + ' for translation… ' + Math.round(ev.loaded * 100) + '%'));
+        m.addEventListener('downloadprogress', ev => transStatus('Downloading ' + name + ' for translation… ' + Math.round(ev.loaded * 100) + '%', true));
       } });
-      setNotice('translate', null);
+      ready[key] = t;
+      transStatus('Ready. Captions will show in ' + name + '.');
       return t;
     })();
     p.catch(e => {
       if (translators[key] !== p) return;
       if (e && e.name === 'Unavailable') {
-        setNotice('translate', 'This browser cannot translate ' + langName(src) + ' into ' + langName(opts.targetLanguage) + '. Captions show the original words.');
+        transStatus('This browser cannot translate ' + langName(src) + ' into ' + name + '. Captions show the original words.', true);
       } else {
         delete translators[key];
-        setNotice('translate', 'Translation could not start. Choose the language again in Settings to retry. Captions show the original words.');
+        transStatus('Tap Start listening or Try a sample conversation to download ' + name + ' for translation.', true);
       }
     });
+  } else if (ready[key]) {
+    transStatus('Ready. Captions will show in ' + langName(S.target) + '.');
   }
   return translators[key];
 }
+function showTranslation(line, out, unsure){
+  if (!line.tp) {
+    line.tp = document.createElement('p'); line.tp.className = 'text'; line.tp.dir = 'auto';
+    line.p.classList.add('orig');
+    line.el.insertBefore(line.tp, line.p);
+  }
+  line.tp.lang = S.target;
+  renderWords(line.tp, out);
+  if (unsure) Array.from(line.tp.children).forEach(s => s.classList.add('unsure'));
+  keepUp();
+}
+/* Live: translate words still being spoken, but only once the language is downloaded. */
+let liveTimer = 0, liveSeq = 0;
+function translateLive(line, text){
+  clearTimeout(liveTimer);
+  if (S.target === 'off') return;
+  const t = ready[captionSource() + '>' + S.target];
+  if (!t) return;
+  liveTimer = setTimeout(async () => {
+    const seq = ++liveSeq;
+    let out; try { out = await t.translate(text); } catch (e) { return; }
+    if (seq !== liveSeq || !out || !line.el.isConnected || line.el.classList.contains('done')) return;
+    showTranslation(line, out, false);
+  }, 200);
+}
 async function translateLine(line, text, unsure){
+  clearTimeout(liveTimer); liveSeq++;
   const pending = prepareTranslator(captionSource());
   if (!pending) return;
   let out;
   try { const t = await pending; out = await t.translate(text); } catch (e) { return; }
-  if (!out || !line.el.isConnected || line.el.querySelector('.orig')) return;
-  const tp = document.createElement('p'); tp.className = 'text'; tp.dir = 'auto'; tp.lang = S.target;
-  line.p.classList.add('orig');
-  line.el.insertBefore(tp, line.p);
-  renderWords(tp, out);
-  if (unsure) Array.from(tp.children).forEach(s => s.classList.add('unsure'));
-  keepUp();
+  if (!out || !line.el.isConnected) return;
+  showTranslation(line, out, unsure);
+  if (line.speaker !== 'Me') speakTranslation(out);
 }
 function paintTarget(){
   const sel = $('target');
   sel.value = S.target;
   if (!HAS_TRANSLATOR) {
     sel.disabled = true;
-    $('transHint').textContent = 'Translation needs Chrome 138 or newer on a computer.';
+    $('speakTr').disabled = true;
+    $('transHint').textContent = 'Translation needs Chrome 138 or newer on a computer. It does not work on phones yet.';
   }
+}
+
+/* Speak translated lines aloud in the target language. */
+const TTS_LANG = { zh:'zh-CN', 'zh-Hant':'zh-TW' };
+let ttsQueue = 0;
+function voiceFor(lang){
+  if (!window.speechSynthesis) return null;
+  const want = (TTS_LANG[lang] || lang).toLowerCase();
+  const voices = speechSynthesis.getVoices();
+  return voices.find(v => v.lang.toLowerCase() === want)
+      || voices.find(v => v.lang.toLowerCase().split(/[-_]/)[0] === want.split('-')[0]) || null;
+}
+function speakTranslation(text){
+  if (!S.speakTr || !window.speechSynthesis) return;
+  // Fall behind by more than two lines and skip ahead, so speech stays close to real time.
+  if (ttsQueue > 2) { speechSynthesis.cancel(); ttsQueue = 0; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = TTS_LANG[S.target] || S.target;
+  const v = voiceFor(S.target);
+  if (v) u.voice = v;
+  else setNotice('translate', 'This device has no ' + langName(S.target) + ' voice installed, so speech may sound wrong. Translations still show on screen.');
+  u.rate = 1.05;
+  u.onend = u.onerror = () => { ttsQueue = Math.max(0, ttsQueue - 1); };
+  ttsQueue++;
+  speechSynthesis.speak(u);
+}
+function paintSpeakTr(){
+  paintToggle($('speakTr'), S.speakTr);
 }
 function finishLine(){
   if (!S.line) return;
@@ -822,13 +900,14 @@ function paintAmp(){
 }
 
 /* ---------- Wiring ---------- */
+function hush(){ if (window.speechSynthesis) speechSynthesis.cancel(); ttsQueue = 0; }
 $('listen').addEventListener('click', () => {
-  if (S.sample) stopSample();
-  else if (S.listening) stopListening();
+  if (S.sample) { stopSample(); hush(); }
+  else if (S.listening) { stopListening(); hush(); }
   else startListening();
 });
 $('sample').addEventListener('click', startSample);
-$('clear').addEventListener('click', clearTranscript);
+$('clear').addEventListener('click', () => { hush(); clearTranscript(); });
 $('jump').addEventListener('click', toLive);
 
 document.querySelectorAll('[data-speaker]').forEach(b => b.addEventListener('click', () => setSpeaker(b.dataset.speaker)));
@@ -849,11 +928,25 @@ document.querySelectorAll('[data-theme-choice]').forEach(b => b.addEventListener
 $('lang').addEventListener('change', e => {
   S.lang = e.target.value;
   if (S.listening && engine) { finishLine(); engine.stop(); engine.start(S.lang); }
-  setNotice('translate', null); prepareTranslator(captionSource());
+  transStatus(''); prepareTranslator(captionSource());
 });
 $('target').addEventListener('change', e => {
   S.target = e.target.value; save('target', S.target);
-  setNotice('translate', null); prepareTranslator(captionSource());
+  transStatus(''); prepareTranslator(captionSource());
+});
+$('speakTr').addEventListener('click', () => {
+  if (S.speakTr) { S.speakTr = false; if (window.speechSynthesis) speechSynthesis.cancel(); ttsQueue = 0; paintSpeakTr(); return; }
+  $('speakCheck').hidden = false; $('speakTr').hidden = true; $('speakConfirm').focus();
+});
+$('speakCancel').addEventListener('click', () => {
+  $('speakCheck').hidden = true; $('speakTr').hidden = false; $('speakTr').focus();
+});
+$('speakConfirm').addEventListener('click', () => {
+  $('speakCheck').hidden = true; $('speakTr').hidden = false;
+  S.speakTr = true; paintSpeakTr(); $('speakTr').focus();
+  if (S.target === 'off') transStatus('Choose a language above. Earshot speaks the translation, not the original words.');
+  else prepareTranslator(captionSource());
+  if (window.speechSynthesis) speechSynthesis.getVoices();
 });
 $('voice').addEventListener('click', () => { S.voice = !S.voice; paintToggle($('voice'), S.voice); });
 
@@ -894,7 +987,7 @@ const savedTheme = load('theme');
 if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') S.theme = savedTheme;
 const savedTarget = load('target');
 if (savedTarget && $('target').querySelector('option[value="' + savedTarget + '"]')) S.target = savedTarget;
-paintTarget(); paintSize(); paintTheme(); paintSpeaker(); paintListen(); paintAmp(); applyVolume(); applySound();
+paintTarget(); paintSpeakTr(); paintSize(); paintTheme(); paintSpeaker(); paintListen(); paintAmp(); applyVolume(); applySound();
 })();
 </script>
 
