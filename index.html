@@ -137,6 +137,24 @@ input[type="email"],input[type="password"]{width:100%;min-height:var(--es-target
 .links p{font-size:var(--es-text-sm);color:var(--es-ink-muted)}
 .link{appearance:none;min-height:var(--es-target-min);padding:0;border:0;background:none;color:var(--es-ink);font-size:var(--es-text-sm);text-decoration:underline;text-underline-offset:.2em;cursor:pointer}
 .pill:disabled,.listen:disabled{opacity:.5;cursor:not-allowed}
+/* ---------- Saved conversations ---------- */
+.save-prompt{padding:var(--es-space-4);border:1px solid var(--es-ink);border-radius:var(--es-radius-card);background:var(--es-surface)}
+.save-prompt p{font-size:var(--es-text-md)}
+.save-prompt .actions{display:flex;flex-wrap:wrap;gap:var(--es-space-2);margin-top:var(--es-space-3)}
+.page{max-width:var(--es-content-max);margin:0 auto;display:flex;flex-direction:column;gap:var(--es-space-5);
+  padding:calc(var(--es-space-4) + env(safe-area-inset-top,0px)) var(--es-space-4) calc(var(--es-space-7) + env(safe-area-inset-bottom,0px))}
+.page-title{font-weight:500;font-size:var(--es-question-size);line-height:1.2}
+.records{list-style:none;margin:0;padding:0;border-top:var(--es-border)}
+.records li{border-bottom:var(--es-border)}
+.record-btn{appearance:none;display:flex;flex-direction:column;gap:var(--es-space-1);width:100%;min-height:var(--es-target-min);padding:var(--es-space-4) 0;border:0;background:none;color:var(--es-ink);text-align:left;cursor:pointer}
+.record-date{font-size:var(--es-text-lg);font-weight:500}
+.record-meta{font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+.record-sum{font-size:var(--es-text-md);color:var(--es-ink-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.section-h{font-weight:500;font-size:var(--es-text-md);margin-bottom:var(--es-space-3)}
+.record-summary{font-size:var(--es-text-lg);line-height:1.5;max-width:60ch}
+.record-summary + .pill{margin-top:var(--es-space-3)}
+.record-log{padding-top:var(--es-space-4);border-top:var(--es-border);font-family:var(--es-font-caption);font-size:var(--es-text-lg);line-height:var(--es-caption-leading)}
+.text.unsure{text-decoration:underline dotted;text-decoration-thickness:2px;text-underline-offset:.2em}
 </style>
 </head>
 <body>
@@ -149,6 +167,9 @@ input[type="email"],input[type="password"]{width:100%;min-height:var(--es-target
     </div>
     <span class="grow"></span>
     <div class="status" id="status" hidden><span class="dot" id="dot"></span><span id="statusText">Listening</span></div>
+    <button class="icon-btn" id="openRecords" aria-label="Saved conversations" hidden>
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>
+    </button>
     <button class="pill" id="acctOpen" hidden>Sign in</button>
     <button class="icon-btn" id="openSettings" aria-label="Settings">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
@@ -162,11 +183,19 @@ input[type="email"],input[type="password"]{width:100%;min-height:var(--es-target
       <div class="empty" id="empty">
         <p class="empty-title">Tap Start listening when the conversation begins.</p>
         <button class="pill" id="sample">Try a sample conversation</button>
-        <p class="fine">Nothing is recorded or saved, and the transcript disappears when you close this page. Captions use your browser's speech service, which may process audio online. Captions can be wrong. Words Earshot is unsure of are underlined.</p>
+        <p class="fine">Nothing is saved unless you are signed in and choose to save a conversation. Otherwise the transcript disappears when you close this page. Captions use your browser's speech service, which may process audio online. Captions can be wrong. Words Earshot is unsure of are underlined.</p>
       </div>
     </div>
     <button class="pill solid jump" id="jump" hidden>Jump to live</button>
   </section>
+
+  <div class="save-prompt" id="savePrompt" role="region" aria-label="Save conversation" hidden>
+    <p id="saveText" role="status">Save this conversation?</p>
+    <div class="actions" id="saveActions">
+      <button class="pill solid" id="saveYes">Save</button>
+      <button class="pill" id="saveNo">Discard</button>
+    </div>
+  </div>
 
   <div class="dock">
     <button class="listen" id="listen">Start listening</button>
@@ -351,6 +380,37 @@ input[type="email"],input[type="password"]{width:100%;min-height:var(--es-target
   </form>
 </main>
 
+<main class="page" id="records" hidden>
+  <header class="top">
+    <button class="icon-btn" id="recordsBack" aria-label="Back to captions">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <h1 class="page-title">Saved conversations</h1>
+  </header>
+  <p class="fine" id="recordsMsg" role="status" hidden></p>
+  <ul class="records" id="recordsList"></ul>
+</main>
+
+<main class="page" id="record" hidden>
+  <header class="top">
+    <button class="icon-btn" id="recordBack" aria-label="Back to saved conversations">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <h1 class="page-title" id="recordTitle"></h1>
+  </header>
+  <p class="record-meta" id="recordMeta"></p>
+  <section aria-labelledby="sumH">
+    <h2 class="section-h" id="sumH">Summary</h2>
+    <p class="record-summary" id="recordSummary"></p>
+    <button class="pill" id="recordSummarize" hidden>Write a summary</button>
+  </section>
+  <section aria-labelledby="logH">
+    <h2 class="section-h" id="logH">Captions</h2>
+    <div class="record-log" id="recordLog"></div>
+  </section>
+  <div><button class="pill" id="recordDelete">Delete conversation</button></div>
+</main>
+
 <script>
 (function(){
 'use strict';
@@ -380,7 +440,7 @@ const SAMPLE = [
 
 const $ = id => document.getElementById(id);
 const S = {
-  listening:false, sample:false, timers:[], line:null, follow:true,
+  listening:false, sample:false, timers:[], line:null, log:null, follow:true,
   capSize:0, theme:'system', target:'off', speakTr:false, voice:false, lang:'en-US', notices:{}, wake:null,
   amp:{ on:false, vol:VOL_START, focus:false, deviceId:null },
   ctx:null, n:null, stream:null, src:null, ns:false, raf:0, lastDelay:0, limitSince:0
@@ -505,6 +565,7 @@ function commitFinal(text, conf){
   if (unsure) Array.from(line.p.children).forEach(s => s.classList.add('unsure'));
   S.line = null;
   keepUp(); paintClear();
+  if (S.log) { line.log = { text }; if (unsure) line.log.unsure = true; S.log.lines.push(line.log); }
   translateLine(line, text, unsure);
 }
 
@@ -591,6 +652,7 @@ async function translateLine(line, text, unsure){
   try { const t = await pending; out = await t.translate(text); } catch (e) { return; }
   if (!out || !line.el.isConnected) return;
   showTranslation(line, out, unsure);
+  if (line.log) line.log.translation = out;
   // Without speaker identification every line is spoken, including the user's own.
   speakTranslation(out);
 }
@@ -633,7 +695,10 @@ function paintSpeakTr(){
 }
 function finishLine(){
   if (!S.line) return;
-  if (S.line.p.children.length) { S.line.el.classList.remove('interim'); S.line.el.classList.add('done'); }
+  if (S.line.p.children.length) {
+    S.line.el.classList.remove('interim'); S.line.el.classList.add('done');
+    if (S.log) S.log.lines.push({ text: Array.from(S.line.p.children, w => w.dataset.w).join(' ') });
+  }
   else S.line.el.remove();
   S.line = null;
 }
@@ -680,6 +745,8 @@ function startListening(){
     return;
   }
   S.listening = true; paintListen(); toLive();
+  S.log = { startedAt: new Date().toISOString(), language: S.lang, lines: [] };
+  document.dispatchEvent(new CustomEvent('earshot:listening'));
   prepareTranslator(captionSource());
   if (engine) {
     try { engine.start(S.lang); }
@@ -697,6 +764,12 @@ function stopListening(){
   finishLine(); stopAmp();
   if (S.wake) { try { S.wake.release(); } catch (e) {} S.wake = null; }
   paintListen();
+  // Hand the finished session to the saved-conversations code, which asks before saving.
+  const log = S.log; S.log = null;
+  if (log && log.lines.length) {
+    log.endedAt = new Date().toISOString();
+    document.dispatchEvent(new CustomEvent('earshot:session', { detail: log }));
+  }
 }
 
 /* ---------- Sample conversation ---------- */
@@ -987,7 +1060,7 @@ var MODES = {
 /* ---------- Views ---------- */
 function show(view){
   document.querySelector('.app').hidden = view !== 'app';
-  $('account').hidden = view !== 'account';
+  ['account', 'records', 'record'].forEach(function(id){ $(id).hidden = view !== id; });
   window.scrollTo(0, 0);
 }
 function say(err, ok){
@@ -1016,6 +1089,7 @@ function paintBar(){
   $('acctWho').textContent = u ? 'Signed in as ' + (u.email || 'your account') : 'Not signed in';
   $('acctAction').textContent = u ? 'Sign out' : 'Sign in';
   $('acctOpen').hidden = !!u;
+  $('openRecords').hidden = !u;
 }
 function openAccount(){
   if ($('settings').open) $('settings').close();
@@ -1079,7 +1153,155 @@ async function saveNewPassword(e){
 async function signOut(){
   if (sb) await sb.auth.signOut();
 }
-function setUser(u){ A.user = u; paintBar(); }
+function setUser(u){
+  A.user = u; paintBar();
+  if (!u) {
+    hidePrompt();
+    if (!$('records').hidden || !$('record').hidden) show('app');
+  }
+}
+
+/* ---------- Saved conversations ---------- */
+var R = { pending:null, list:[], current:null };
+var dateFmt = new Intl.DateTimeFormat(undefined, { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+var timeFmt = new Intl.DateTimeFormat(undefined, { hour:'numeric', minute:'2-digit' });
+
+function langLabel(code){
+  var o = code && $('lang').querySelector('option[value="' + code + '"]');
+  return o ? o.textContent : (code || '');
+}
+function duration(a, b){
+  var mins = Math.round((new Date(b) - new Date(a)) / 60000);
+  return mins < 1 ? 'Under a minute' : mins === 1 ? '1 minute' : mins + ' minutes';
+}
+function metaLine(rec){
+  return [timeFmt.format(new Date(rec.started_at)), duration(rec.started_at, rec.ended_at), langLabel(rec.language)]
+    .filter(Boolean).join(' · ');
+}
+
+/* Summary from Chrome's on-device Summarizer. Returns null when unavailable. */
+var HAS_SUMMARIZER = 'Summarizer' in self;
+async function summarize(lines){
+  if (!HAS_SUMMARIZER || !lines.length) return null;
+  try {
+    if (await Summarizer.availability() === 'unavailable') return null;
+    var s = await Summarizer.create({ type:'tldr', format:'plain-text', length:'short',
+      sharedContext:'Live captions of a spoken conversation, one line per sentence.' });
+    try { return (await s.summarize(lines.map(function(l){ return l.text; }).join('\n'))).trim() || null; }
+    finally { s.destroy(); }
+  } catch (e) { return null; }
+}
+
+/* Ask before saving */
+function promptText(text, actions){
+  $('saveText').textContent = text;
+  $('saveActions').hidden = !actions;
+  $('savePrompt').hidden = false;
+}
+function hidePrompt(){ R.pending = null; $('savePrompt').hidden = true; }
+document.addEventListener('earshot:session', function(e){
+  if (!sb || !A.user) return;
+  R.pending = e.detail;
+  promptText('Save this conversation?', true);
+});
+// A new conversation replaces an unanswered save prompt.
+document.addEventListener('earshot:listening', hidePrompt);
+
+async function saveSession(){
+  var log = R.pending; if (!log) return;
+  promptText('Saving…', false);
+  var sumP = summarize(log.lines);   // start now while the tap still counts as user activation
+  var r = await sb.from('sessions').insert({
+    started_at:log.startedAt, ended_at:log.endedAt, language:log.language, lines:log.lines
+  }).select('id').single();
+  if (r.error) { promptText('Could not save. Check your connection and try again.', true); return; }
+  R.pending = null;
+  promptText(HAS_SUMMARIZER ? 'Saved. Writing a summary…' : 'Saved.', false);
+  var summary = await sumP;
+  if (summary) await sb.from('sessions').update({ summary:summary }).eq('id', r.data.id);
+  promptText('Saved to your conversations.', false);
+  setTimeout(function(){ if (!R.pending) $('savePrompt').hidden = true; }, 3000);
+}
+
+/* List */
+function recordsMsg(text){ $('recordsMsg').textContent = text || ''; $('recordsMsg').hidden = !text; }
+async function openRecords(){
+  if ($('settings').open) $('settings').close();
+  show('records'); recordsMsg('Loading…');
+  var r = await sb.from('sessions').select('id,started_at,ended_at,language,summary').order('started_at', { ascending:false });
+  if (r.error) { recordsMsg('Could not load your conversations. Check your connection and try again.'); return; }
+  R.list = r.data;
+  paintRecords();
+}
+function paintRecords(){
+  var ul = $('recordsList'); ul.textContent = '';
+  recordsMsg(R.list.length ? '' : 'No saved conversations yet. When you stop listening, Earshot asks whether to save the conversation.');
+  R.list.forEach(function(rec){
+    var li = document.createElement('li');
+    var b = document.createElement('button'); b.className = 'record-btn';
+    var d = document.createElement('span'); d.className = 'record-date'; d.textContent = dateFmt.format(new Date(rec.started_at));
+    var m = document.createElement('span'); m.className = 'record-meta'; m.textContent = metaLine(rec);
+    var s = document.createElement('span'); s.className = 'record-sum'; s.textContent = rec.summary || 'No summary';
+    b.append(d, m, s);
+    b.addEventListener('click', function(){ openRecord(rec.id); });
+    li.appendChild(b); ul.appendChild(li);
+  });
+}
+
+/* Detail */
+async function openRecord(id){
+  var r = await sb.from('sessions').select('*').eq('id', id).single();
+  if (r.error) { recordsMsg('Could not open that conversation. Try again.'); return; }
+  var rec = R.current = r.data;
+  $('recordTitle').textContent = dateFmt.format(new Date(rec.started_at));
+  $('recordMeta').textContent = metaLine(rec);
+  paintSummary();
+  var log = $('recordLog'); log.textContent = '';
+  rec.lines.forEach(function(l){
+    var el = document.createElement('div'); el.className = 'line';
+    if (l.translation) {
+      var t = document.createElement('p'); t.className = 'text'; t.dir = 'auto'; t.textContent = l.translation; el.appendChild(t);
+    }
+    var p = document.createElement('p'); p.className = 'text' + (l.translation ? ' orig' : '') + (l.unsure ? ' unsure' : '');
+    p.textContent = l.text; el.appendChild(p);
+    log.appendChild(el);
+  });
+  show('record');
+}
+function paintSummary(){
+  var rec = R.current;
+  $('recordSummary').textContent = rec.summary ||
+    (HAS_SUMMARIZER ? 'No summary yet.' : 'No summary. Summaries are written on this device and need Chrome on a computer.');
+  $('recordSummarize').hidden = !!rec.summary || !HAS_SUMMARIZER;
+}
+async function summarizeCurrent(){
+  var rec = R.current, b = $('recordSummarize');
+  b.disabled = true; $('recordSummary').textContent = 'Writing a summary…';
+  var summary = await summarize(rec.lines);
+  b.disabled = false;
+  if (!summary) { $('recordSummary').textContent = 'A summary could not be written on this device.'; return; }
+  var r = await sb.from('sessions').update({ summary:summary }).eq('id', rec.id);
+  if (!r.error) { rec.summary = summary; R.list.forEach(function(x){ if (x.id === rec.id) x.summary = summary; }); }
+  paintSummary();
+  if (r.error) $('recordSummary').textContent = summary + ' (Not saved. Check your connection.)';
+}
+async function deleteCurrent(){
+  if (!confirm('Delete this conversation? This cannot be undone.')) return;
+  var id = R.current.id;
+  var r = await sb.from('sessions').delete().eq('id', id);
+  if (r.error) { alert('Could not delete. Check your connection and try again.'); return; }
+  R.list = R.list.filter(function(x){ return x.id !== id; });
+  R.current = null;
+  show('records'); paintRecords();
+}
+
+$('saveYes').addEventListener('click', saveSession);
+$('saveNo').addEventListener('click', hidePrompt);
+$('openRecords').addEventListener('click', openRecords);
+$('recordsBack').addEventListener('click', function(){ show('app'); });
+$('recordBack').addEventListener('click', function(){ show('records'); });
+$('recordSummarize').addEventListener('click', summarizeCurrent);
+$('recordDelete').addEventListener('click', deleteCurrent);
 
 /* ---------- Wiring ---------- */
 $('acctOpen').addEventListener('click', openAccount);
