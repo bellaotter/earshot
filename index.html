@@ -124,6 +124,22 @@ select{width:100%;min-height:var(--es-target-min);padding:0 var(--es-space-3);bo
 .vol{display:flex;align-items:center;gap:var(--es-space-3)}
 .vol input{flex:1;min-width:0;height:var(--es-target-min);accent-color:var(--es-ink)}
 .vol output{font-size:var(--es-text-md);color:var(--es-ink-muted);min-width:5ch;text-align:right}
+/* ---------- Account ---------- */
+.acct-who{font-size:var(--es-text-md);color:var(--es-ink-muted);overflow-wrap:anywhere}
+.account{max-width:400px;min-height:100%;margin:0 auto;display:flex;flex-direction:column;justify-content:center;gap:var(--es-space-5);
+  padding:calc(var(--es-space-7) + env(safe-area-inset-top,0px)) var(--es-space-4) calc(var(--es-space-7) + env(safe-area-inset-bottom,0px))}
+.account .lockup{font-size:calc(var(--es-question-size) * 1.5)}
+.account-lede{font-size:var(--es-text-lg);color:var(--es-ink-muted)}
+.form{display:flex;flex-direction:column;gap:var(--es-space-4)}
+.field{display:flex;flex-direction:column;gap:var(--es-space-1)}
+.field label{font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+input[type="email"],input[type="password"]{width:100%;min-height:var(--es-target-min);padding:0 var(--es-space-4);border:var(--es-border);border-radius:var(--es-radius-card);background:var(--es-surface);font-size:var(--es-text-md)}
+.wide{width:100%;flex:none}
+.or{display:flex;align-items:center;gap:var(--es-space-3);font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+.or::before,.or::after{content:"";flex:1;border-top:var(--es-border)}
+.links p{font-size:var(--es-text-sm);color:var(--es-ink-muted)}
+.link{appearance:none;min-height:var(--es-target-min);padding:0;border:0;background:none;color:var(--es-ink);font-size:var(--es-text-sm);text-decoration:underline;text-underline-offset:.2em;cursor:pointer}
+.pill:disabled,.listen:disabled{opacity:.5;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -136,6 +152,7 @@ select{width:100%;min-height:var(--es-target-min);padding:0 var(--es-space-3);bo
     </div>
     <span class="grow"></span>
     <div class="status" id="status" hidden><span class="dot" id="dot"></span><span id="statusText">Listening</span></div>
+    <button class="pill" id="acctOpen" hidden>Sign in</button>
     <button class="icon-btn" id="openSettings" aria-label="Settings">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
     </button>
@@ -192,6 +209,14 @@ select{width:100%;min-height:var(--es-target-min);padding:0 var(--es-space-3);bo
     <button class="icon-btn" id="closeSettings" aria-label="Close settings">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
+  </div>
+
+  <div class="group">
+    <h3>Account</h3>
+    <div class="row">
+      <span class="acct-who" id="acctWho">Not signed in</span>
+      <button class="pill" id="acctAction">Sign in</button>
+    </div>
   </div>
 
   <div class="group">
@@ -290,6 +315,48 @@ select{width:100%;min-height:var(--es-target-min);padding:0 var(--es-space-3);bo
     </div>
   </div>
 </dialog>
+
+<main class="account" id="account" hidden>
+  <div class="lockup">
+    <svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="18" x2="64" y2="18"/><line x1="8" y1="36" x2="48" y2="36"/><line x1="8" y1="54" x2="30" y2="54"/></svg>
+    <h1 class="wordmark">earshot</h1>
+  </div>
+  <p class="account-lede" id="acctLede">Sign in to see your saved conversations.</p>
+
+  <div class="notice" id="acctMsg" role="alert" hidden></div>
+  <div class="notice" id="acctOk" role="status" hidden></div>
+
+  <div class="form" id="acctMain">
+    <div class="form" id="googleWrap">
+      <button class="pill wide" id="google" type="button">Continue with Google</button>
+      <div class="or">or</div>
+    </div>
+    <form class="form" id="acctForm" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" autocomplete="email" required>
+      </div>
+      <div class="field" id="pwField">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+      </div>
+      <button class="listen wide" type="submit" id="acctSubmit">Sign in</button>
+    </form>
+    <div class="links">
+      <p id="forgotRow"><button class="link" type="button" id="forgot">Forgot your password?</button></p>
+      <p><span id="switchLead">New to Earshot?</span> <button class="link" type="button" id="acctSwitch">Create an account</button></p>
+      <p><button class="link" type="button" id="acctBack">Continue without signing in</button></p>
+    </div>
+  </div>
+
+  <form class="form" id="resetForm" novalidate hidden>
+    <div class="field">
+      <label for="newPassword">New password</label>
+      <input type="password" id="newPassword" autocomplete="new-password" required>
+    </div>
+    <button class="listen wide" type="submit">Save new password</button>
+  </form>
+</main>
 
 <script>
 (function(){
@@ -828,6 +895,152 @@ if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') 
 const savedTarget = load('target');
 if (savedTarget && $('target').querySelector('option[value="' + savedTarget + '"]')) S.target = savedTarget;
 paintTarget(); paintSize(); paintTheme(); paintSpeaker(); paintListen(); paintAmp(); applyVolume(); applySound();
+})();
+</script>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+'use strict';
+
+var $ = function(id){ return document.getElementById(id); };
+var cfg = window.EARSHOT_CONFIG || {};
+var ready = !!(window.supabase && cfg.supabaseUrl && cfg.supabaseAnonKey &&
+               cfg.supabaseUrl.indexOf('YOUR-') === -1 && cfg.supabaseAnonKey.indexOf('YOUR-') === -1);
+var sb = ready ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey) : null;
+var NOT_SET_UP = 'Accounts are not set up yet. Add your Supabase keys to config.js.';
+var A = { mode:'signin', user:null, busy:false };
+var HOME = location.origin + location.pathname;
+
+var MODES = {
+  signin:{ caption:'Sign in to see your saved conversations.', submit:'Sign in', lead:'New to Earshot?', sw:'Create an account', pw:'current-password' },
+  signup:{ caption:'Create an account to save your conversations.', submit:'Create account', lead:'Already have an account?', sw:'Sign in', pw:'new-password' },
+  forgot:{ caption:'We will email you a link to reset your password.', submit:'Send reset link', lead:'Remembered it?', sw:'Sign in', pw:'' }
+};
+
+/* ---------- Views ---------- */
+function show(view){
+  document.querySelector('.app').hidden = view !== 'app';
+  $('account').hidden = view !== 'account';
+  window.scrollTo(0, 0);
+}
+function say(err, ok){
+  $('acctMsg').textContent = err || ''; $('acctMsg').hidden = !err;
+  $('acctOk').textContent = ok || ''; $('acctOk').hidden = !ok;
+}
+function setMode(mode){
+  A.mode = mode; var m = MODES[mode];
+  $('acctLede').textContent = m.caption;
+  $('acctSubmit').textContent = m.submit;
+  $('switchLead').textContent = m.lead;
+  $('acctSwitch').textContent = m.sw;
+  $('pwField').hidden = mode === 'forgot';
+  $('password').autocomplete = m.pw;
+  $('googleWrap').hidden = mode === 'forgot';
+  $('forgotRow').hidden = mode !== 'signin';
+  $('acctMain').hidden = false; $('resetForm').hidden = true;
+  say();
+}
+function setBusy(on){
+  A.busy = on;
+  document.querySelectorAll('#account button').forEach(function(b){ if (b.id !== 'acctBack') b.disabled = on; });
+}
+function paintBar(){
+  var u = A.user;
+  $('acctWho').textContent = u ? 'Signed in as ' + (u.email || 'your account') : 'Not signed in';
+  $('acctAction').textContent = u ? 'Sign out' : 'Sign in';
+  $('acctOpen').hidden = !!u;
+}
+function openAccount(){
+  if ($('settings').open) $('settings').close();
+  setMode('signin'); show('account'); $('email').focus();
+}
+
+function friendly(err){
+  var m = (err && err.message) || '';
+  if (/invalid login credentials/i.test(m)) return 'That email and password do not match an account.';
+  if (/email not confirmed/i.test(m)) return 'Confirm your email first. Check your inbox for the link we sent.';
+  if (/already registered/i.test(m)) return 'An account with that email already exists. Sign in instead.';
+  if (/rate limit/i.test(m)) return 'Too many tries. Wait a minute, then try again.';
+  if (/failed to fetch|network/i.test(m)) return 'Could not reach the sign-in service. Check your internet connection.';
+  return m || 'Something went wrong. Try again.';
+}
+
+/* ---------- Actions ---------- */
+async function submit(e){
+  e.preventDefault();
+  if (A.busy) return;
+  var email = $('email').value.trim(), pw = $('password').value;
+  if (!email || email.indexOf('@') < 1) { say('Enter your email address.'); $('email').focus(); return; }
+  if (A.mode !== 'forgot' && !pw) { say('Enter your password.'); $('password').focus(); return; }
+  if (!sb) { say(NOT_SET_UP); return; }
+  say(); setBusy(true);
+  try {
+    var r;
+    if (A.mode === 'signin') {
+      r = await sb.auth.signInWithPassword({ email:email, password:pw });
+      if (r.error) throw r.error;
+    } else if (A.mode === 'signup') {
+      r = await sb.auth.signUp({ email:email, password:pw, options:{ emailRedirectTo:HOME } });
+      if (r.error) throw r.error;
+      if (!r.data.session) { $('password').value = ''; say(null, 'Check your email for a link to confirm your account, then sign in.'); }
+    } else {
+      r = await sb.auth.resetPasswordForEmail(email, { redirectTo:HOME });
+      if (r.error) throw r.error;
+      say(null, 'If that email has an account, a reset link is on its way.');
+    }
+  } catch (err) { say(friendly(err)); }
+  setBusy(false);
+}
+async function google(){
+  if (!sb) { say(NOT_SET_UP); return; }
+  say(); setBusy(true);
+  var r = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo:HOME } });
+  if (r.error) { say(friendly(r.error)); setBusy(false); }
+  // On success the browser leaves for Google and returns here signed in.
+}
+async function saveNewPassword(e){
+  e.preventDefault();
+  var pw = $('newPassword').value;
+  if (!pw) { say('Enter a new password.'); return; }
+  setBusy(true);
+  var r = await sb.auth.updateUser({ password:pw });
+  setBusy(false);
+  if (r.error) { say(friendly(r.error)); return; }
+  $('newPassword').value = '';
+  show('app');
+}
+async function signOut(){
+  if (sb) await sb.auth.signOut();
+}
+function setUser(u){ A.user = u; paintBar(); }
+
+/* ---------- Wiring ---------- */
+$('acctOpen').addEventListener('click', openAccount);
+$('acctAction').addEventListener('click', function(){ if (A.user) signOut(); else openAccount(); });
+$('acctBack').addEventListener('click', function(){ show('app'); });
+$('acctSwitch').addEventListener('click', function(){ setMode(A.mode === 'signin' ? 'signup' : 'signin'); });
+$('forgot').addEventListener('click', function(){ setMode('forgot'); $('email').focus(); });
+$('acctForm').addEventListener('submit', submit);
+$('resetForm').addEventListener('submit', saveNewPassword);
+$('google').addEventListener('click', google);
+
+if (sb) {
+  sb.auth.onAuthStateChange(function(event, session){
+    setUser(session ? session.user : null);
+    if (event === 'PASSWORD_RECOVERY') {
+      show('account');
+      $('acctLede').textContent = 'Choose a new password.'; say();
+      $('acctMain').hidden = true; $('resetForm').hidden = false;
+      $('newPassword').focus();
+    } else if (event === 'SIGNED_IN' && !$('account').hidden && A.mode !== 'forgot') {
+      $('password').value = '';
+      show('app');
+    }
+  });
+}
+paintBar();
 })();
 </script>
 </body>
